@@ -32,9 +32,29 @@ namespace Converter.DAL
                 .WithOne()
                 .HasForeignKey(x => x.object_id);
 
-            modelBuilder.Entity<TermRelationship>()
+            var tr = modelBuilder.Entity<TermRelationship>();
+                tr
                 .ToTable("wp_term_relationships")
                 .HasKey(x => new { x.object_id, x.term_taxonomy_id });
+
+            tr
+                .HasOne(x => x.TermTaxonomy)
+                .WithOne()
+                .HasForeignKey<TermRelationship>(x => x.term_taxonomy_id);
+
+            modelBuilder.Entity<Term>()
+                .ToTable("wp_terms")
+                .HasKey(x => x.term_id);
+
+            var termTaxonomyBuilder = modelBuilder.Entity<TermTaxonomy>();
+                termTaxonomyBuilder
+                .ToTable("wp_term_taxonomy")
+                .HasKey(t => t.term_taxonomy_id);
+
+            termTaxonomyBuilder
+                .HasOne(x => x.Term)
+                .WithOne()
+                .HasForeignKey<TermTaxonomy>(x => x.term_id);
         }
     }
 }

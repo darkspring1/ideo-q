@@ -57,6 +57,8 @@ ORDER BY p.ID";
             var posts = DataContext.Set<Post>()
                 .Where(x => x.post_type == "product")
                 .Include(x => x.TermRelationships)
+                .ThenInclude(x => x.TermTaxonomy)
+                .ThenInclude(x => x.Term)
                 .ToArray();
 
             return posts.ToDictionary(p => p.ID);
