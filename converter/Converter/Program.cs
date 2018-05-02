@@ -1,32 +1,44 @@
-﻿using Converter.DAL;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 using System;
 
 namespace Converter
 {
     class Program
     {
-        static IConfiguration GetConfiguration()
+        static Settings CreateSettings()
         {
-            return new ConfigurationBuilder()
+            var config = new ConfigurationBuilder()
               .AddJsonFile("appsettings.json")
-              //.AddJsonFile("appsettings.Development.json")
-              //.AddEnvironmentVariables()
               .Build();
+
+            return new Settings(config);
         }
 
+        static ILoggerFactory CreateLoggerFactory()
+        {
+            ILoggerFactory loggerFactory = new LoggerFactory().AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
+            NLog.LogManager.LoadConfiguration("nlog.config");
+            return loggerFactory;
+        }
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            var config = GetConfiguration();
-            using (var dao = new Dao(config["ConnectionString"]))
+            var loggerFactory = CreateLoggerFactory();
+            var logger = loggerFactory.CreateLogger<Program>();
+            logger.LogInformation("STARTED");
+            try
+            {    
+                var strategy = new ColorConverStrategy(loggerFactory.CreateLogger<ColorConverStrategy>(), CreateSettings());
+                strategy.Execute();
+                logger.LogInformation("FINISHED");
+            }
+            catch (Exception e)
             {
-                var posts = dao.GetPosts();
-
+                logger.LogError(e.Message, e);
             }
         }
 
-       
     }
 }

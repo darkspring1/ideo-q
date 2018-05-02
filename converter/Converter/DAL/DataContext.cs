@@ -29,15 +29,18 @@ namespace Converter.DAL
 
             postBuilder
                 .HasMany(x => x.TermRelationships)
-                .WithOne()
+                .WithOne(x => x.Post)
                 .HasForeignKey(x => x.object_id);
+            postBuilder
+                .Ignore(x => x.Colours)
+                .Ignore(x => x.FColours);
 
-            var tr = modelBuilder.Entity<TermRelationship>();
-                tr
+            var termRelationship = modelBuilder.Entity<TermRelationship>();
+                termRelationship
                 .ToTable("wp_term_relationships")
                 .HasKey(x => new { x.object_id, x.term_taxonomy_id });
 
-            tr
+            termRelationship
                 .HasOne(x => x.TermTaxonomy)
                 .WithOne()
                 .HasForeignKey<TermRelationship>(x => x.term_taxonomy_id);

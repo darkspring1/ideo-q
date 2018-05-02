@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Converter.DAL.Constants;
 using Converter.DAL.Entity;
 using Microsoft.EntityFrameworkCore;
 
@@ -52,7 +53,7 @@ ORDER BY p.ID";
             }
         }
 
-        public IDictionary<long, Post> GetPosts()
+        public Post[] GetPosts()
         {
             var posts = DataContext.Set<Post>()
                 .Where(x => x.post_type == "product")
@@ -61,7 +62,17 @@ ORDER BY p.ID";
                 .ThenInclude(x => x.Term)
                 .ToArray();
 
-            return posts.ToDictionary(p => p.ID);
+            return posts;
+        }
+
+        public TermTaxonomy[] GetFilterableColours()
+        {
+            return DataContext.Set<TermRelationship>()
+                .Where(x => x.TermTaxonomy.taxonomy == Taxonomy.PA_FCOLOR)
+                .Select(x => x.TermTaxonomy)
+                .Include(x => x.Term)
+                .Distinct()
+                .ToArray();
         }
 
 
