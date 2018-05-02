@@ -1,12 +1,12 @@
-﻿using MySql.Data.MySqlClient;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Dapper;
 using System.Linq;
+using Converter.DAL.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Converter.DAL
 {
-    class Dao
+    class Dao : IDisposable
     {
         const string CMD_POSTS_WITH_COLOURS_AND_FCOLOURS = @"SELECT
 p.ID postId,
@@ -21,40 +21,45 @@ JOIN wp_terms t ON t.term_id = tt.term_id
 WHERE post_type = 'product'
 AND (taxonomy = 'pa_color' OR taxonomy = 'f_color')
 ORDER BY p.ID";
-        //private readonly string connectionString;
 
-        private readonly Lazy<MySqlConnection> _connection;
-        
 
+        private DataContext _dataContext;
+        private readonly string _connectionString;
+
+        private DataContext DataContext
+        {
+            get
+            {
+                if (_dataContext == null)
+                {
+                    _dataContext = new DataContext(_connectionString);
+                }
+
+                return _dataContext;
+            }
+        }
         
         public Dao(string connectionString)
         {
-            //this.connectionString = connectionString;
-
-            _connection = new Lazy<MySqlConnection>(() =>
-            {
-                var conn = new MySqlConnection(connectionString);
-                conn.Open();
-                return conn;
-            });
+            this._connectionString = connectionString;
         }
 
         public void Dispose()
         {
-            if (_connection.IsValueCreated)
+            if (_dataContext != null)
             {
-                _connection.Value.Dispose();
+                _dataContext.Dispose();
             }
         }
 
-        
-
-
-        public IDictionary<long, PostWithColorAndFColor> GetPosts()
+        public IDictionary<long, Post> GetPosts()
         {
-            var posts = _connection.Value.Query<PostWithColorAndFColor>(CMD_POSTS_WITH_COLOURS_AND_FCOLOURS);
+            var posts = DataContext.Set<Post>()
+                .Where(x => x.post_type == "product")
+                .Include(x => x.TermRelationships)
+                .ToArray();
 
-            return posts.ToDictionary(p => p.PostId);
+            return posts.ToDictionary(p => p.ID);
         }
 
 

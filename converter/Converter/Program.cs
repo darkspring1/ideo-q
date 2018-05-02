@@ -1,34 +1,29 @@
-﻿using MySql.Data.MySqlClient;
+﻿using Converter.DAL;
+using Microsoft.Extensions.Configuration;
 using System;
 
 namespace Converter
 {
     class Program
     {
+        static IConfiguration GetConfiguration()
+        {
+            return new ConfigurationBuilder()
+              .AddJsonFile("appsettings.json")
+              //.AddJsonFile("appsettings.Development.json")
+              //.AddEnvironmentVariables()
+              .Build();
+        }
+
+
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-
-            using (var conn = new MySqlConnection("server=localhost;port=3306;database=test-ideo-q;user=root;SslMode=none;"))
+            var config = GetConfiguration();
+            using (var dao = new Dao(config["ConnectionString"]))
             {
-                conn.Open();
-                MySqlCommand cmd = new MySqlCommand("select * from wp_posts", conn);
+                var posts = dao.GetPosts();
 
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        /*
-                        list.Add(new Album()
-                        {
-                            Id = Convert.ToInt32(reader["Id"]),
-                            Name = reader["Name"].ToString(),
-                            ArtistName = reader["ArtistName"].ToString(),
-                            Price = Convert.ToInt32(reader["Price"]),
-                            Genre = reader["genre"].ToString()
-                        });*/
-                    }
-                }
             }
         }
 
