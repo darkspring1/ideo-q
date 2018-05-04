@@ -1,4 +1,5 @@
-﻿using Converter.DAL.Entity;
+﻿using Converter.DAL.Constants;
+using Converter.DAL.Entity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Converter.DAL
@@ -24,12 +25,12 @@ namespace Converter.DAL
 
             var postBuilder = modelBuilder.Entity<Post>();
             postBuilder
-                .ToTable("wp_posts")
+                .ToTable(Tables.Posts)
                 .HasKey(x => x.ID);
 
             postBuilder
                 .HasMany(x => x.TermRelationships)
-                .WithOne(x => x.Post)
+                .WithOne()
                 .HasForeignKey(x => x.object_id);
             postBuilder
                 .Ignore(x => x.Colours)
@@ -37,7 +38,7 @@ namespace Converter.DAL
 
             var termRelationship = modelBuilder.Entity<TermRelationship>();
                 termRelationship
-                .ToTable("wp_term_relationships")
+                .ToTable(Tables.TermRelationships)
                 .HasKey(x => new { x.object_id, x.term_taxonomy_id });
 
             termRelationship
@@ -46,12 +47,12 @@ namespace Converter.DAL
                 .HasForeignKey<TermRelationship>(x => x.term_taxonomy_id);
 
             modelBuilder.Entity<Term>()
-                .ToTable("wp_terms")
+                .ToTable(Tables.Terms)
                 .HasKey(x => x.term_id);
 
             var termTaxonomyBuilder = modelBuilder.Entity<TermTaxonomy>();
                 termTaxonomyBuilder
-                .ToTable("wp_term_taxonomy")
+                .ToTable(Tables.TermTaxonomy)
                 .HasKey(t => t.term_taxonomy_id);
 
             termTaxonomyBuilder

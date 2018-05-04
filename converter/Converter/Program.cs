@@ -33,6 +33,8 @@ namespace Converter
                 var strategy = new ColorConverStrategy(loggerFactory.CreateLogger<ColorConverStrategy>(), CreateSettings());
                 strategy.Execute();
                 logger.LogInformation("FINISHED");
+                Console.WriteLine("Press any key.");
+                Console.ReadKey();
             }
             catch (Exception e)
             {

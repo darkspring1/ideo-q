@@ -65,14 +65,55 @@ ORDER BY p.ID";
             return posts;
         }
 
-        public TermTaxonomy[] GetFilterableColours()
+        public TermTaxonomy[] GetFilterableColours(bool asNoTracking = false)
         {
-            return DataContext.Set<TermRelationship>()
-                .Where(x => x.TermTaxonomy.taxonomy == Taxonomy.PA_FCOLOR)
-                .Select(x => x.TermTaxonomy)
+            var q = DataContext.Set<TermTaxonomy>()
+                .Where(x => x.taxonomy == Taxonomy.PA_FCOLOR)
                 .Include(x => x.Term)
-                .Distinct()
-                .ToArray();
+                .GroupBy(x => x.Term.name)
+                .Select(x => x.First());
+
+            if (asNoTracking)
+            {
+                q = q.AsNoTracking();
+            }
+
+            return q.ToArray();
+        }
+
+        /// <summary>
+        /// удалит fcolours  вместе со сылающимися на них TermRelationship
+        /// </summary>
+        /// <param name="termTaxonomiesForRemove"></param>
+        public void DeleteFColours(TermTaxonomy[] termTaxonomiesForRemove)
+        {
+            if (termTaxonomiesForRemove.Any())
+            {
+                var taxonomyIds = string.Join(",", termTaxonomiesForRemove.Select(x => x.term_taxonomy_id));
+                var termIds = string.Join(",", termTaxonomiesForRemove.Select(x => x.term_id));
+
+                var deleteTermRelationshipCmd = $"DELETE FROM {Tables.TermRelationships} WHERE term_taxonomy_id IN ({taxonomyIds})";
+                var deleteTermTaxonomyCmd = $"DELETE FROM {Tables.TermTaxonomy} WHERE term_taxonomy_id IN ({taxonomyIds})";
+                var deleteTermCmd = $"DELETE FROM {Tables.Terms} WHERE term_id IN ({termIds})";
+                _dataContext.Database.ExecuteSqlCommand(deleteTermRelationshipCmd);
+                _dataContext.Database.ExecuteSqlCommand(deleteTermTaxonomyCmd);
+                _dataContext.Database.ExecuteSqlCommand(deleteTermCmd);
+            }
+        }
+
+        /// <summary>
+        /// Создаст FColours в БД
+        /// </summary>
+        /// <param name="fcolours"></param>
+        public void CreateFColours(string[] fcolours)
+        {
+            var entities = fcolours.Select(x => TermTaxonomy.CreateFColour(x)).ToArray();
+            _dataContext.AddRange(entities);
+        }
+
+        public void SaveChanges()
+        {
+            _dataContext.SaveChanges();
         }
 
 

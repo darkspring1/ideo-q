@@ -19,14 +19,15 @@ namespace Converter
         public List<TermTaxonomy> ConvertToFilterable(TermTaxonomy color)
         {
             List<TermTaxonomy> result;
-            if (directMapping.TryGetValue(color.Term.name, out result))
+            if (directMapping.TryGetValue(color.Term.LowerName, out result))
             {
                 return result;
             }
 
+            result = new List<TermTaxonomy>();
             foreach (var fcolour in _filterableColours)
             {
-                if (color.Term.name.Contains(fcolour.Term.name))
+                if (color.Term.LowerName.Contains(fcolour.Term.LowerName))
                 {
                     result.Add(fcolour);
                 }

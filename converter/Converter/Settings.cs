@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Converter
 {
@@ -13,6 +12,13 @@ namespace Converter
         public Settings(IConfiguration config)
         {
             _config = config;
+            _fcolours = new Lazy<string[]>(() => {
+                var section = _config.GetSection("FColours");
+                return section
+                .AsEnumerable(true)
+                .Select(x => x.Value.TrimStart().TrimEnd().ToLower())
+                .ToArray();
+            });
         }
 
 
@@ -24,12 +30,28 @@ namespace Converter
             }
         }
 
+        public string UnknownColoursFile
+        {
+            get
+            {
+                return _config["UnknownColoursFile"];
+            }
+        }
+
+        public string ResultFile
+        {
+            get
+            {
+                return _config["ResultFile"];
+            }
+        }
+
         public IDictionary<string, List<string>> ColorMapping
         {
             get
             {
-                var sections = _config.GetSection("ColorMapping");
-                return sections
+                var section = _config.GetSection("ColorMapping");
+                return section
                     .AsEnumerable(true)
                     .ToDictionary(
                         kvp => kvp.Key.ToLower(),
@@ -40,5 +62,9 @@ namespace Converter
                             .ToList() );
             }
         }
+
+        Lazy<string[]> _fcolours;
+
+        public string[] FColours => _fcolours.Value;
     }
 }
