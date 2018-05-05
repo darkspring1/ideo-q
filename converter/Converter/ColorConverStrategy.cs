@@ -160,9 +160,9 @@ namespace Converter
                 foreach (var color in post.Colours)
                 {
                     var fcolours = converter.ConvertToFilterable(color);
-                    if (fcolours == null)
+                    if (fcolours == null || !fcolours.Any())
                     {
-                        WriteToUnknownColoursFile($"PostId:{post.ID}, TermId:{color.term_id}, TermId:{color.Term.LowerName}");
+                        WriteToUnknownColoursFile($"PostId:{post.ID}, TermId:{color.term_id}, TermName:{color.Term.LowerName}");
                         _unknownColoursCounter++;
                     }
                     else
@@ -176,7 +176,7 @@ namespace Converter
                             else
                             {
                                 var fcoloursNames = fcolours.Select(x => x.Term.LowerName);
-                                WriteToResultFile($"{color.Term.LowerName} => {string.Join(",", fcoloursNames)}");
+                                WriteToResultFile($"postId: {post.ID} {color.Term.LowerName} => {string.Join(",", fcoloursNames)}");
                                 _convertedColoursCounter++;
                             }
 

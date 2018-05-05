@@ -43,8 +43,8 @@ namespace Converter.DAL
 
             termRelationship
                 .HasOne(x => x.TermTaxonomy)
-                .WithOne()
-                .HasForeignKey<TermRelationship>(x => x.term_taxonomy_id);
+                .WithMany()
+                .HasForeignKey(x => x.term_taxonomy_id);
 
             modelBuilder.Entity<Term>()
                 .ToTable(Tables.Terms)
@@ -57,8 +57,8 @@ namespace Converter.DAL
 
             termTaxonomyBuilder
                 .HasOne(x => x.Term)
-                .WithOne()
-                .HasForeignKey<TermTaxonomy>(x => x.term_id);
+                .WithMany()
+                .HasForeignKey(x => x.term_id);
         }
     }
 }

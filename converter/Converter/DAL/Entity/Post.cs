@@ -7,9 +7,8 @@ namespace Converter.DAL.Entity
 {
     class Post
     {
-        public long ID { get; set; }
-        public List<TermRelationship> TermRelationships { get; set; }
-        public string post_type { get;  set; }
+        Lazy<TermTaxonomy[]> _colours;
+        Lazy<TermTaxonomy[]> _fcolours;
 
         Lazy<TermTaxonomy[]> CreateLazy(string taxonomy)
         {
@@ -23,8 +22,17 @@ namespace Converter.DAL.Entity
             });
         }
 
-        Lazy<TermTaxonomy[]> _colours => CreateLazy(Taxonomy.PA_COLOR);
-        Lazy<TermTaxonomy[]> _fcolours => CreateLazy(Taxonomy.PA_FCOLOR);
+        private Post()
+        {
+            _colours = CreateLazy(Taxonomy.PA_COLOR);
+            _fcolours = CreateLazy(Taxonomy.PA_FCOLOR);
+        }
+
+        public long ID { get; set; }
+        public List<TermRelationship> TermRelationships { get; set; }
+        public string post_type { get; set; }
+
+
         public TermTaxonomy[] Colours => _colours.Value;
         public TermTaxonomy[] FColours => _fcolours.Value;
 
@@ -37,8 +45,12 @@ namespace Converter.DAL.Entity
 
             TermRelationships.Add(new TermRelationship
             {
-                term_taxonomy_id = termTaxonomy.term_taxonomy_id
+                term_taxonomy_id = termTaxonomy.term_taxonomy_id,
+                TermTaxonomy = termTaxonomy
             });
+
+            _fcolours = CreateLazy(Taxonomy.PA_FCOLOR);
+
             return true;
         }
        
