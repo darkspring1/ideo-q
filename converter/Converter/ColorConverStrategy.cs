@@ -11,28 +11,22 @@ namespace Converter
 {
     class ColorConverStrategy
     {
-        private class NotConvertedColorInfo
-        {
-            public long PostId { get; set; }
-            public string TermName { get; set; }
-            public long TermId { get; set; }
-        }
 
         private readonly ILogger<ColorConverStrategy> _logger;
         private readonly Settings _settings;
 
-        private readonly List<NotConvertedColorInfo> _notConvertedColours;
         private long _convertedColoursCounter = 0;
+        private long _unknownColoursCounter = 0;
 
         public ColorConverStrategy(ILogger<ColorConverStrategy> logger, Settings settings)
         {
             _logger = logger;
             _settings = settings;
-            _notConvertedColours = new List<NotConvertedColorInfo>();
         }
 
         public void Execute()
         {
+            ResetResultFiles();
             using (var dao = new Dao(_settings.ConnectionString))
             {
                 UpdateFColours(dao);
@@ -42,6 +36,11 @@ namespace Converter
                 foreach (var p in posts)
                 {
                     ConverPost(p, colorConverter);
+                }
+
+                if (_settings.SaveResult)
+                {
+                    dao.SaveChanges();
                 }
             }
             WriteResults();
@@ -68,11 +67,23 @@ namespace Converter
                 dao.DeleteFColours(forDelete);
                 dao.CreateFColours(forAdd);
                 dao.SaveChanges();
+
+                if (forDelete.Any())
+                {
+                    _logger.LogInformation($"fcolours were deleted: {string.Join(",", forDelete.Select(x => x.Term.LowerName))}");
+                }
+                if (forAdd.Any())
+                {
+                    _logger.LogInformation($"fcolours were added: {string.Join(",", forAdd)}");
+                }
             }
             
         }
 
-        void WriteResults()
+        /// <summary>
+        /// пересоздадим файлы с результатами работы
+        /// </summary>
+        void ResetResultFiles()
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_settings.ResultFile));
             Directory.CreateDirectory(Path.GetDirectoryName(_settings.UnknownColoursFile));
@@ -80,20 +91,41 @@ namespace Converter
             File.Delete(_settings.ResultFile);
             File.Delete(_settings.UnknownColoursFile);
 
-            using (var resultFile = File.CreateText(_settings.ResultFile))
-            {
-                resultFile.WriteLine(DateTime.Now.ToString());
-                resultFile.WriteLine($"{_convertedColoursCounter} were converted.");
+            using (File.CreateText(_settings.ResultFile)) { }
+            using (File.CreateText(_settings.UnknownColoursFile)) { }
+        }
 
-                if (_notConvertedColours.Any())
-                {
-                    resultFile.WriteLine($"{_notConvertedColours.Count()} were not converted. See {_settings.UnknownColoursFile} .");
-                    using (var uknownColoursFile = File.CreateText(_settings.UnknownColoursFile))
-                    {
-                        var line = string.Join(System.Environment.NewLine, _notConvertedColours.Select(x => $"PostId:{x.PostId}, TermId:{x.TermId}, TermId:{x.TermName}"));
-                        uknownColoursFile.WriteLine(line);
-                    }
-                }
+
+        void WriteToResultFile(params string[] lines)
+        {
+            File.AppendAllLines(_settings.ResultFile, lines);
+        }
+
+        void WriteToUnknownColoursFile(params string[] lines)
+        {
+            File.AppendAllLines(_settings.UnknownColoursFile, lines);
+        }
+
+
+        void WriteResults()
+        {
+            WriteToResultFile($"{_convertedColoursCounter} colours were converted.");
+            if (_settings.SaveResult)
+            {
+                WriteToResultFile("All the results were saved to database");
+            }
+            else
+            {
+                WriteToResultFile("The results were not saved to database. If you want to save it set the 'SaveResult' flag 'true' in appsettings.json");
+            }
+
+            if (_unknownColoursCounter > 0)
+            {
+                WriteToResultFile($"{_unknownColoursCounter} colours were not converted. See {_settings.UnknownColoursFile} .");
+            }
+            else
+            {
+                File.Delete(_settings.UnknownColoursFile);
             }
 
         }
@@ -130,12 +162,8 @@ namespace Converter
                     var fcolours = converter.ConvertToFilterable(color);
                     if (fcolours == null)
                     {
-                        _notConvertedColours.Add(new NotConvertedColorInfo
-                        {
-                            PostId = post.ID,
-                            TermId = color.term_id,
-                            TermName = color.Term.LowerName
-                        });
+                        WriteToUnknownColoursFile($"PostId:{post.ID}, TermId:{color.term_id}, TermId:{color.Term.LowerName}");
+                        _unknownColoursCounter++;
                     }
                     else
                     {
@@ -147,14 +175,19 @@ namespace Converter
                             }
                             else
                             {
-                                _logger.LogTrace($"{color} => {string.Join(",", fcolours)}");
+                                var fcoloursNames = fcolours.Select(x => x.Term.LowerName);
+                                WriteToResultFile($"{color.Term.LowerName} => {string.Join(",", fcoloursNames)}");
                                 _convertedColoursCounter++;
                             }
 
                         }
-                        
+
                     }
                 }
+            }
+            else
+            {
+                _logger.LogInformation($"Product {post.ID} has no colours");
             }
         }
     }

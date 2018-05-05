@@ -38,6 +38,14 @@ namespace Converter
             }
         }
 
+        public bool SaveResult
+        {
+            get
+            {
+                return bool.Parse(_config["SaveResult"]);
+            }
+        }
+
         public string ResultFile
         {
             get
