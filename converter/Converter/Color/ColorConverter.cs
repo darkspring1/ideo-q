@@ -1,9 +1,7 @@
 ﻿using Converter.DAL.Entity;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace Converter
+namespace Converter.Color
 {
     class ColorConverter
     {

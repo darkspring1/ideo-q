@@ -6,18 +6,18 @@ using System.IO;
 using System.Linq;
 using Converter.Settings;
 
-namespace Converter
+namespace Converter.Color
 {
-    class ColorConverStrategy
+    class ColorConvertStrategy
     {
         private readonly Dao _dao;
-        private readonly ILogger<ColorConverStrategy> _logger;
+        private readonly ILogger<ColorConvertStrategy> _logger;
         private readonly ColorConverterSettings _settings;
 
         private long _convertedColoursCounter = 0;
         private long _unknownColoursCounter = 0;
 
-        public ColorConverStrategy(Dao dao, ILogger<ColorConverStrategy> logger, ColorConverterSettings settings)
+        public ColorConvertStrategy(Dao dao, ILogger<ColorConvertStrategy> logger, ColorConverterSettings settings)
         {
             _dao = dao;
             _logger = logger;

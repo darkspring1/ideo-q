@@ -1,5 +1,7 @@
-﻿using Converter.DAL;
+﻿using Converter.Color;
+using Converter.DAL;
 using Converter.Settings;
+using Converter.Size;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
@@ -35,8 +37,11 @@ namespace Converter
                 var settings = CreateSettings();
                 using (var dao = new Dao(settings.ConnectionString))
                 {
-                    var strategy = new ColorConverStrategy(dao, loggerFactory.CreateLogger<ColorConverStrategy>(), settings.ColorConverterSettings);
-                    strategy.Execute();
+                    var colorStrategy = new ColorConvertStrategy(dao, loggerFactory.CreateLogger<ColorConvertStrategy>(), settings.ColorConverterSettings);
+                    colorStrategy.Execute();
+
+                    var sizeStrategy = new SizeConvertStrategy(dao, loggerFactory.CreateLogger<SizeConvertStrategy>(), settings.SizeConverterSettings);
+                    sizeStrategy.Execute();
                 }
                 logger.LogInformation("FINISHED");
                 Console.WriteLine("Press any key.");
