@@ -46,6 +46,15 @@ namespace Converter
             }
         }
 
+        public bool DeleteAllFColours
+        {
+            get
+            {
+                return bool.Parse(_config["DeleteAllFColours"]);
+            }
+        }
+        
+
         public string ResultFile
         {
             get

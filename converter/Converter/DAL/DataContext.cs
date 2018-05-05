@@ -59,6 +59,9 @@ namespace Converter.DAL
                 .HasOne(x => x.Term)
                 .WithMany()
                 .HasForeignKey(x => x.term_id);
+
+            modelBuilder.Entity<TaxonomyWithCount>()
+                .HasKey(x => x.term_taxonomy_id);
         }
     }
 }

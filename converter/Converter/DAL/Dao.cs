@@ -9,19 +9,37 @@ namespace Converter.DAL
 {
     class Dao : IDisposable
     {
-        const string CMD_POSTS_WITH_COLOURS_AND_FCOLOURS = @"SELECT
-p.ID postId,
-p.post_title postTitle,
-t.term_id termId,
-t.name,
-tt.taxonomy taxonomy
-FROM wp_posts p
-JOIN wp_term_relationships tr ON tr.object_id = p.ID
-JOIN wp_term_taxonomy tt on tt.term_taxonomy_id = tr.term_taxonomy_id
-JOIN wp_terms t ON t.term_id = tt.term_id
-WHERE post_type = 'product'
-AND (taxonomy = 'pa_color' OR taxonomy = 'f_color')
-ORDER BY p.ID";
+        const string CMD_SELECT_TERM_TAXONOMY_COUNT = @"
+
+SELECT tr.term_taxonomy_id term_taxonomy_id, COUNT(*) count FROM wp_term_relationships tr
+	JOIN wp_term_taxonomy tt
+		ON tt.term_taxonomy_id = tr.term_taxonomy_id
+		
+	WHERE tt.taxonomy = '{0}'
+	GROUP BY (tr.term_taxonomy_id);
+
+";
+
+        const string CMD_DELETE_ALL_FCOLOURS = @"
+START TRANSACTION;
+
+DELETE tr
+FROM wp_term_relationships tr
+JOIN wp_term_taxonomy tt
+	ON tr.term_taxonomy_id = tt.term_taxonomy_id
+WHERE tt.taxonomy = 'pa_fcolor';
+
+DELETE t
+FROM wp_terms t
+JOIN wp_term_taxonomy tt
+	ON t.term_id = tt.term_id
+WHERE tt.taxonomy = 'pa_fcolor';
+
+DELETE tt
+FROM wp_term_taxonomy tt
+WHERE tt.taxonomy = 'pa_fcolor';
+
+COMMIT;";
 
 
         private DataContext _dataContext;
@@ -65,6 +83,14 @@ ORDER BY p.ID";
             return posts;
         }
 
+        public IDictionary<long, long> GetTaxonomyCount()
+        {
+            return DataContext
+                .Set<TaxonomyWithCount>()
+                .FromSql(string.Format(CMD_SELECT_TERM_TAXONOMY_COUNT, Taxonomy.PA_FCOLOR))
+                .ToDictionary(x => x.term_taxonomy_id, x => x.count); 
+        }
+
         public TermTaxonomy[] GetFilterableColours(bool asNoTracking = false)
         {
             var q = DataContext.Set<TermTaxonomy>()
@@ -82,7 +108,7 @@ ORDER BY p.ID";
         }
 
         /// <summary>
-        /// удалит fcolours  вместе со сылающимися на них TermRelationship
+        /// Удалить переданные TermTaxonomy из таблиц: wp_terms, wp_term_taxonomy, wp_termrelationship
         /// </summary>
         /// <param name="termTaxonomiesForRemove"></param>
         public void DeleteFColours(TermTaxonomy[] termTaxonomiesForRemove)
@@ -99,6 +125,14 @@ ORDER BY p.ID";
                 _dataContext.Database.ExecuteSqlCommand(deleteTermTaxonomyCmd);
                 _dataContext.Database.ExecuteSqlCommand(deleteTermCmd);
             }
+        }
+
+        /// <summary>
+        /// Удалить все TermTaxonomy c taxonomy='pa_fcolor' из таблиц: wp_terms, wp_term_taxonomy, wp_termrelationship
+        /// </summary>
+        public void DeleteAllFColours()
+        {
+            DataContext.Database.ExecuteSqlCommand(CMD_DELETE_ALL_FCOLOURS);
         }
 
         /// <summary>

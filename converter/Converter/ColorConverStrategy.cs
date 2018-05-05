@@ -29,8 +29,16 @@ namespace Converter
             ResetResultFiles();
             using (var dao = new Dao(_settings.ConnectionString))
             {
+                if (_settings.DeleteAllFColours)
+                {
+                    dao.DeleteAllFColours();
+                    _logger.LogInformation("All fcolours and their relationships were deleted");
+                }
+
                 UpdateFColours(dao);
-                var colorConverter = CreateColorConverter(dao, _settings);
+
+                var fcolours = dao.GetFilterableColours();
+                var colorConverter = CreateColorConverter(fcolours, _settings);
                 var posts = dao.GetPosts();
 
                 foreach (var p in posts)
@@ -40,8 +48,20 @@ namespace Converter
 
                 if (_settings.SaveResult)
                 {
+                    //сохним новые fcolours
+                    dao.SaveChanges();
+
+                    //проставим количество
+                    var taxonomyWithCounts = dao.GetTaxonomyCount();
+
+                    foreach (var fcolor in fcolours)
+                    {
+                        fcolor.count = taxonomyWithCounts[fcolor.term_taxonomy_id];
+                    }
+
                     dao.SaveChanges();
                 }
+
             }
             WriteResults();
         }
@@ -130,11 +150,10 @@ namespace Converter
 
         }
 
-        ColorConverter CreateColorConverter(Dao dao, Settings settings)
+        ColorConverter CreateColorConverter(TermTaxonomy[] fcolours, Settings settings)
         {
             var mapping = new Dictionary<string, List<TermTaxonomy>>();
-            var fcolours = dao.GetFilterableColours();
-
+            
             foreach (var mappingItem in settings.ColorMapping)
             {
                 var key = mappingItem.Key;
@@ -187,7 +206,7 @@ namespace Converter
             }
             else
             {
-                _logger.LogInformation($"Product {post.ID} has no colours");
+                _logger.LogInformation($"Post {post.ID} has no colours");
             }
         }
     }
