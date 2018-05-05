@@ -5,27 +5,18 @@ using System.Linq;
 
 namespace Converter.Settings
 {
-    public class ColorConverterSettings
+    public class ColorConverterSettings : SettingsBase
     {
-        private readonly IConfigurationSection _config;
-
-        public ColorConverterSettings(IConfiguration config, string sectionName)
+        public ColorConverterSettings(IConfiguration config, string sectionName) : base(config, sectionName)
         {
-            _config = config.GetSection(sectionName);
-
-            _fcolours = new Lazy<string[]>(() => {
-                var section = _config.GetSection("FColours");
-                return section
-                .AsEnumerable(true)
-                .Select(x => x.Value.TrimStart().TrimEnd().ToLower())
-                .ToArray();
-            });
+            _fcolours = LazyArray("FColours");
         }
+
         public string UnknownColoursFile
         {
             get
             {
-                return _config["UnknownColoursFile"];
+                return Config["UnknownColoursFile"];
             }
         }
 
@@ -33,7 +24,7 @@ namespace Converter.Settings
         {
             get
             {
-                return bool.Parse(_config["SaveResult"]);
+                return bool.Parse(Config["SaveResult"]);
             }
         }
 
@@ -41,7 +32,7 @@ namespace Converter.Settings
         {
             get
             {
-                return bool.Parse(_config["DeleteAllFColours"]);
+                return bool.Parse(Config["DeleteAllFColours"]);
             }
         }
 
@@ -50,7 +41,7 @@ namespace Converter.Settings
         {
             get
             {
-                return _config["ResultFile"];
+                return Config["ResultFile"];
             }
         }
 
@@ -58,7 +49,7 @@ namespace Converter.Settings
         {
             get
             {
-                var section = _config.GetSection("ColorMapping");
+                var section = Config.GetSection("ColorMapping");
                 return section
                     .AsEnumerable(true)
                     .ToDictionary(

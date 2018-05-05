@@ -8,13 +8,14 @@ namespace Converter.Settings
 
         public MainSettings(IConfiguration config)
         {
-            ColorConverterSettings = new ColorConverterSettings(config, "ColorConverter");
-
             _config = config;
+            ColorConverterSettings = new ColorConverterSettings(config, "ColorConverter");
+            SizeConverterSettings = new SizeConverterSettings(config, "SizeConverter");
         }
 
-        public ColorConverterSettings ColorConverterSettings { get; private set; }
+        public ColorConverterSettings ColorConverterSettings { get; }
 
+        public SizeConverterSettings SizeConverterSettings { get; }
 
         public string ConnectionString
         {
