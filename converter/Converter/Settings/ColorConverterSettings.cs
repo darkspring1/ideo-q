@@ -3,15 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Converter
+namespace Converter.Settings
 {
-    class Settings
+    public class ColorConverterSettings
     {
-        private readonly IConfiguration _config;
+        private readonly IConfigurationSection _config;
 
-        public Settings(IConfiguration config)
+        public ColorConverterSettings(IConfiguration config, string sectionName)
         {
-            _config = config;
+            _config = config.GetSection(sectionName);
+
             _fcolours = new Lazy<string[]>(() => {
                 var section = _config.GetSection("FColours");
                 return section
@@ -20,16 +21,6 @@ namespace Converter
                 .ToArray();
             });
         }
-
-
-        public string ConnectionString
-        {
-            get
-            {
-                return _config["ConnectionString"];
-            }
-        }
-
         public string UnknownColoursFile
         {
             get
@@ -53,7 +44,7 @@ namespace Converter
                 return bool.Parse(_config["DeleteAllFColours"]);
             }
         }
-        
+
 
         public string ResultFile
         {
@@ -76,7 +67,7 @@ namespace Converter
                             .Value
                             .Split(",")
                             .Select(x => x.TrimStart().TrimEnd().ToLower())
-                            .ToList() );
+                            .ToList());
             }
         }
 

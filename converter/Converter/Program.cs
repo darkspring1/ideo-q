@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Converter.DAL;
+using Converter.Settings;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using System;
@@ -7,13 +9,13 @@ namespace Converter
 {
     class Program
     {
-        static Settings CreateSettings()
+        static MainSettings CreateSettings()
         {
             var config = new ConfigurationBuilder()
               .AddJsonFile("appsettings.json")
               .Build();
 
-            return new Settings(config);
+            return new MainSettings(config);
         }
 
         static ILoggerFactory CreateLoggerFactory()
@@ -29,9 +31,13 @@ namespace Converter
             var logger = loggerFactory.CreateLogger<Program>();
             logger.LogInformation("STARTED");
             try
-            {    
-                var strategy = new ColorConverStrategy(loggerFactory.CreateLogger<ColorConverStrategy>(), CreateSettings());
-                strategy.Execute();
+            {
+                var settings = CreateSettings();
+                using (var dao = new Dao(settings.ConnectionString))
+                {
+                    var strategy = new ColorConverStrategy(dao, loggerFactory.CreateLogger<ColorConverStrategy>(), settings.ColorConverterSettings);
+                    strategy.Execute();
+                }
                 logger.LogInformation("FINISHED");
                 Console.WriteLine("Press any key.");
                 Console.ReadKey();

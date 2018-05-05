@@ -1,25 +1,25 @@
 ﻿using Converter.DAL;
 using Converter.DAL.Entity;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using Converter.Settings;
 
 namespace Converter
 {
     class ColorConverStrategy
     {
-
+        private readonly Dao _dao;
         private readonly ILogger<ColorConverStrategy> _logger;
-        private readonly Settings _settings;
+        private readonly ColorConverterSettings _settings;
 
         private long _convertedColoursCounter = 0;
         private long _unknownColoursCounter = 0;
 
-        public ColorConverStrategy(ILogger<ColorConverStrategy> logger, Settings settings)
+        public ColorConverStrategy(Dao dao, ILogger<ColorConverStrategy> logger, ColorConverterSettings settings)
         {
+            _dao = dao;
             _logger = logger;
             _settings = settings;
         }
@@ -27,19 +27,18 @@ namespace Converter
         public void Execute()
         {
             ResetResultFiles();
-            using (var dao = new Dao(_settings.ConnectionString))
-            {
+            
                 if (_settings.DeleteAllFColours)
                 {
-                    dao.DeleteAllFColours();
+                    _dao.DeleteAllFColours();
                     _logger.LogInformation("All fcolours and their relationships were deleted");
                 }
 
-                UpdateFColours(dao);
+                UpdateFColours(_dao);
 
-                var fcolours = dao.GetFilterableColours();
+                var fcolours = _dao.GetFilterableColours();
                 var colorConverter = CreateColorConverter(fcolours, _settings);
-                var posts = dao.GetPosts();
+                var posts = _dao.GetPosts();
 
                 foreach (var p in posts)
                 {
@@ -49,20 +48,20 @@ namespace Converter
                 if (_settings.SaveResult)
                 {
                     //сохним новые fcolours
-                    dao.SaveChanges();
+                    _dao.SaveChanges();
 
                     //проставим количество
-                    var taxonomyWithCounts = dao.GetTaxonomyCount();
+                    var taxonomyWithCounts = _dao.GetTaxonomyCount();
 
                     foreach (var fcolor in fcolours)
                     {
                         fcolor.count = taxonomyWithCounts[fcolor.term_taxonomy_id];
                     }
 
-                    dao.SaveChanges();
+                    _dao.SaveChanges();
                 }
 
-            }
+            
             WriteResults();
         }
 
@@ -150,7 +149,7 @@ namespace Converter
 
         }
 
-        ColorConverter CreateColorConverter(TermTaxonomy[] fcolours, Settings settings)
+        ColorConverter CreateColorConverter(TermTaxonomy[] fcolours, ColorConverterSettings settings)
         {
             var mapping = new Dictionary<string, List<TermTaxonomy>>();
             
