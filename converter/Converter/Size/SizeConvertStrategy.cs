@@ -26,9 +26,52 @@ namespace Converter.Size
 
         public void Execute()
         {
-        
+            var posts = _dao.GetPosts();
+
+            foreach (var p in posts)
+            {
+                ConverPost(p, colorConverter);
+            }
         }
-        
-        
+
+        void ConverPost(Post post, ColorConverter converter)
+        {
+            if (post.Colours.Any())
+            {
+                foreach (var color in post.Colours)
+                {
+                    var fcolours = converter.ConvertToFilterable(color);
+                    if (fcolours == null || !fcolours.Any())
+                    {
+                        WriteToUnknownColoursFile($"PostId:{post.ID}, TermId:{color.term_id}, TermName:{color.Term.LowerName}");
+                        _unknownColoursCounter++;
+                    }
+                    else
+                    {
+                        foreach (var fcolor in fcolours)
+                        {
+                            if (!post.SetFColour(fcolor))
+                            {
+                                _logger.LogInformation($"fcolor {fcolor.Term.LowerName} already set for post {post.ID}.");
+                            }
+                            else
+                            {
+                                var fcoloursNames = fcolours.Select(x => x.Term.LowerName);
+                                WriteToResultFile($"postId: {post.ID} {color.Term.LowerName} => {string.Join(",", fcoloursNames)}");
+                                _convertedColoursCounter++;
+                            }
+
+                        }
+
+                    }
+                }
+            }
+            else
+            {
+                _logger.LogInformation($"Post {post.ID} has no colours");
+            }
+        }
+
+
     }
 }
