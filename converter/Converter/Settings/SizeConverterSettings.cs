@@ -5,7 +5,7 @@ using System.Linq;
 namespace Converter.Settings
 {
 
-    public class SizeConverterSettings : SettingsBase
+    public class SizeConverterSettings : BaseConverterSettings
     {
         Lazy<string[]> _shoesCategories;
         

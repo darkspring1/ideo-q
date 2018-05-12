@@ -105,13 +105,13 @@ namespace Converter.Color
         void ResetResultFiles()
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_settings.ResultFile));
-            Directory.CreateDirectory(Path.GetDirectoryName(_settings.UnknownColoursFile));
+            Directory.CreateDirectory(Path.GetDirectoryName(_settings.UnknownFile));
 
             File.Delete(_settings.ResultFile);
-            File.Delete(_settings.UnknownColoursFile);
+            File.Delete(_settings.UnknownFile);
 
             using (File.CreateText(_settings.ResultFile)) { }
-            using (File.CreateText(_settings.UnknownColoursFile)) { }
+            using (File.CreateText(_settings.UnknownFile)) { }
         }
 
 
@@ -122,7 +122,7 @@ namespace Converter.Color
 
         void WriteToUnknownColoursFile(params string[] lines)
         {
-            File.AppendAllLines(_settings.UnknownColoursFile, lines);
+            File.AppendAllLines(_settings.UnknownFile, lines);
         }
 
 
@@ -140,11 +140,11 @@ namespace Converter.Color
 
             if (_unknownColoursCounter > 0)
             {
-                WriteToResultFile($"{_unknownColoursCounter} colours were not converted. See {_settings.UnknownColoursFile} .");
+                WriteToResultFile($"{_unknownColoursCounter} colours were not converted. See {_settings.UnknownFile} .");
             }
             else
             {
-                File.Delete(_settings.UnknownColoursFile);
+                File.Delete(_settings.UnknownFile);
             }
 
         }

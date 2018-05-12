@@ -5,19 +5,11 @@ using System.Linq;
 
 namespace Converter.Settings
 {
-    public class ColorConverterSettings : SettingsBase
+    public class ColorConverterSettings : BaseConverterSettings
     {
         public ColorConverterSettings(IConfiguration config, string sectionName) : base(config, sectionName)
         {
             _fcolours = LazyStringArray("FColours");
-        }
-
-        public string UnknownColoursFile
-        {
-            get
-            {
-                return Config["UnknownColoursFile"];
-            }
         }
 
         public bool SaveResult
@@ -33,15 +25,6 @@ namespace Converter.Settings
             get
             {
                 return bool.Parse(Config["DeleteAllFColours"]);
-            }
-        }
-
-
-        public string ResultFile
-        {
-            get
-            {
-                return Config["ResultFile"];
             }
         }
 
