@@ -7,20 +7,30 @@ namespace Converter.Settings
     public class SettingsBase
     {
         protected IConfigurationSection Config { get; }
-        public SettingsBase(IConfiguration config, string sectionName)
+        public SettingsBase(IConfiguration parent, string sectionName)
         {
-            Config = config.GetSection(sectionName);
+            Config = parent.GetSection(sectionName);
+        }
+
+        public SettingsBase(IConfigurationSection config)
+        {
+            Config = config;
         }
 
         protected Lazy<string[]> LazyStringArray(string sectionName)
         {
             return new Lazy<string[]>(() => {
                 var section = Config.GetSection(sectionName);
-                return section
+                return StringArray(section);
+            });
+        }
+
+        protected string[] StringArray(IConfigurationSection section)
+        {
+            return section
                 .AsEnumerable(true)
                 .Select(x => x.Value.TrimStart().TrimEnd().ToLower())
                 .ToArray();
-            });
         }
     }
 }
