@@ -9,7 +9,7 @@ namespace Converter.Settings
     {
         public ColorConverterSettings(IConfiguration config, string sectionName) : base(config, sectionName)
         {
-            _fcolours = LazyArray("FColours");
+            _fcolours = LazyStringArray("FColours");
         }
 
         public string UnknownColoursFile

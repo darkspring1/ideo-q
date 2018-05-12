@@ -12,7 +12,7 @@ namespace Converter.Settings
             Config = config.GetSection(sectionName);
         }
 
-        protected Lazy<string[]> LazyArray(string sectionName)
+        protected Lazy<string[]> LazyStringArray(string sectionName)
         {
             return new Lazy<string[]>(() => {
                 var section = Config.GetSection(sectionName);
