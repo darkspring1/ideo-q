@@ -34,5 +34,21 @@ namespace Converter.DAL.Entity
 
             return termTaxonomy;
         }
+
+        public static TermTaxonomy CreateFSize(string fsizeName)
+        {
+            var termTaxonomy = new TermTaxonomy
+            {
+                taxonomy = Taxonomy.PA_FSIZE,
+                description = $"size for filter '{fsizeName}'",
+                Term = new Term
+                {
+                    slug = fsizeName,
+                    name = fsizeName
+                }
+            };
+
+            return termTaxonomy;
+        }
     }
 }

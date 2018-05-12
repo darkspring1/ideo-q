@@ -34,7 +34,10 @@ namespace Converter.DAL
                 .HasForeignKey(x => x.object_id);
             postBuilder
                 .Ignore(x => x.Colours)
-                .Ignore(x => x.FColours);
+                .Ignore(x => x.FColours)
+                .Ignore(x => x.Sizes)
+                .Ignore(x => x.FSizes)
+                .Ignore(x => x.Categories);
 
             var termRelationship = modelBuilder.Entity<TermRelationship>();
                 termRelationship

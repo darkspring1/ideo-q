@@ -91,13 +91,13 @@ COMMIT;";
                 .ToDictionary(x => x.term_taxonomy_id, x => x.count); 
         }
 
-        public TermTaxonomy[] GetFilterableColours(bool asNoTracking = false)
+        TermTaxonomy[] GetTermTaxonomies(string taxonomy, bool asNoTracking = false)
         {
             var q = DataContext.Set<TermTaxonomy>()
-                .Where(x => x.taxonomy == Taxonomy.PA_FCOLOR)
-                .Include(x => x.Term)
-                .GroupBy(x => x.Term.name)
-                .Select(x => x.First());
+               .Where(x => x.taxonomy == taxonomy)
+               .Include(x => x.Term)
+               .GroupBy(x => x.Term.name)
+               .Select(x => x.First());
 
             if (asNoTracking)
             {
@@ -105,6 +105,16 @@ COMMIT;";
             }
 
             return q.ToArray();
+        }
+
+        public TermTaxonomy[] GetFColours(bool asNoTracking = false)
+        {
+            return GetTermTaxonomies(Taxonomy.PA_FCOLOR, asNoTracking);
+        }
+
+        public TermTaxonomy[] GetFSizes(bool asNoTracking = false)
+        {
+            return GetTermTaxonomies(Taxonomy.PA_FSIZE, asNoTracking);
         }
 
         /// <summary>
@@ -143,6 +153,13 @@ COMMIT;";
         {
             var entities = fcolours.Select(x => TermTaxonomy.CreateFColour(x)).ToArray();
             _dataContext.AddRange(entities);
+        }
+
+        public TermTaxonomy CreateFSize(string fsize)
+        {
+            var entitiy = TermTaxonomy.CreateFSize(fsize);
+            _dataContext.AddRange(entitiy);
+            return entitiy;
         }
 
         public void SaveChanges()

@@ -36,7 +36,7 @@ namespace Converter.Color
 
                 UpdateFColours(_dao);
 
-                var fcolours = _dao.GetFilterableColours();
+                var fcolours = _dao.GetFColours();
                 var colorConverter = CreateColorConverter(fcolours, _settings);
                 var posts = _dao.GetPosts();
 
@@ -71,7 +71,7 @@ namespace Converter.Color
             if (_settings.FColours.Any())
             {
                 var existedFColours = dao
-                    .GetFilterableColours(true);
+                    .GetFColours(true);
                 var existedFColoursNames = existedFColours.Select(x => x.Term.LowerName).ToArray();
 
                 var forDelete = existedFColours
@@ -193,6 +193,7 @@ namespace Converter.Color
                             }
                             else
                             {
+                                //запись дублируется в логе, вынести из цикла
                                 var fcoloursNames = fcolours.Select(x => x.Term.LowerName);
                                 WriteToResultFile($"postId: {post.ID} {color.Term.LowerName} => {string.Join(",", fcoloursNames)}");
                                 _convertedColoursCounter++;
