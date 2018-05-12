@@ -8,21 +8,16 @@ using System;
 
 namespace Converter.Size
 {
-    class SizeConvertStrategy
+    class SizeConvertStrategy : BaseConvertStrategy<SizeConverterSettings>
     {
         const string FSIZE_CACHE_KEY_TEMPLATE = "fsize_{0}";
-    private readonly Dao _dao;
-        private readonly ILogger<SizeConvertStrategy> _logger;
-        private readonly SizeConverterSettings _settings;
         private readonly IMemoryCache _cache;
-        private long _convertedSizesCounter = 0;
-        private long _unknownColoursCounter = 0;
-
-        public SizeConvertStrategy(Dao dao, ILogger<SizeConvertStrategy> logger, SizeConverterSettings settings, IMemoryCache cache)
+        
+        public SizeConvertStrategy(
+            Dao dao, ILogger<SizeConvertStrategy> logger, SizeConverterSettings settings,
+            IMemoryCache cache) : base(dao, logger, settings)
         {
-            _dao = dao;
-            _logger = logger;
-            _settings = settings;
+            
             _cache = cache;
         }
 
@@ -30,7 +25,7 @@ namespace Converter.Size
         {
             //UpdateFColours();
             LoadExistedFSizesToCache();
-            var posts = _dao.GetPosts();
+            var posts = Dao.GetPosts();
 
             foreach (var p in posts)
             {
@@ -39,10 +34,9 @@ namespace Converter.Size
             
         }
 
-
         string[] GetFSizesFromSettings()
         {
-            return _settings
+            return Settings
                 .SizeCharts
                 .SelectMany(x => x)
                 .SelectMany(x => x)
@@ -51,13 +45,12 @@ namespace Converter.Size
                 .ToArray();
         }
 
-
         /// <summary>
         /// существующие размеры в кэш
         /// </summary>
         void LoadExistedFSizesToCache()
         {
-            var fsizes = _dao.GetFSizes(true);
+            var fsizes = Dao.GetFSizes(true);
 
             foreach (var fsize in fsizes)
             {
@@ -112,12 +105,12 @@ namespace Converter.Size
                 {
                     //cacheEntry.
 
-                    var binding = _settings.SizeChartBindings.FirstOrDefault(x => x.Categories.Contains(categoryName));
+                    var binding = Settings.SizeChartBindings.FirstOrDefault(x => x.Categories.Contains(categoryName));
                     if (binding == null)
                     {
                         return null;
                     }
-                    return _settings.SizeCharts.First(sc => sc.Name == binding.SizeChartName);
+                    return Settings.SizeCharts.First(sc => sc.Name == binding.SizeChartName);
                 });
 
                 if (sizeChart != null)
@@ -132,7 +125,7 @@ namespace Converter.Size
         {
             return _cache.GetOrCreate(string.Format(FSIZE_CACHE_KEY_TEMPLATE, fsizeName), cacheEntry =>
             {
-                return _dao.CreateFSize(fsizeName);
+                return Dao.CreateFSize(fsizeName);
             });
         }
         
@@ -151,7 +144,7 @@ namespace Converter.Size
                     }
                     else
                     {
-                        _logger.LogInformation($"Post {post.ID} has no size chart");
+                        Logger.LogInformation($"Post {post.ID} has no size chart");
                         convertFunc = size => new[] { size.Term.LowerName };
                     }
 
@@ -163,30 +156,27 @@ namespace Converter.Size
                             var fsize = GetFSize(fsizeName);
                             if (post.SetFSize(fsize))
                             {
-                                _convertedSizesCounter++;
+                                ConvertedItemsCounter++;
                             }
                             else
                             {
-                                _logger.LogInformation($"fsize {fsize.Term.LowerName} already set for post {post.ID}.");
+                                Logger.LogInformation($"fsize {fsize.Term.LowerName} already set for post {post.ID}.");
                             }
 
                             
                         }
-                        //WriteToResultFile($"postId: {post.ID} {size.Term.LowerName} => {string.Join(",", fsizeNames)}");
-
-
-
+                        WriteToResultFile($"postId: {post.ID} {size.Term.LowerName} => {string.Join(",", fsizeNames)}");
                     }
                     
                 }
                 else
                 {
-                    _logger.LogInformation($"Post {post.ID} has no categories");
+                    Logger.LogInformation($"Post {post.ID} has no categories");
                 }
             }
             else
             {
-                _logger.LogInformation($"Post {post.ID} has no sizes");
+                Logger.LogInformation($"Post {post.ID} has no sizes");
             }
         }
 

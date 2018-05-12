@@ -9,6 +9,14 @@ namespace Converter.Settings
             
         }
 
+        public bool SaveResult
+        {
+            get
+            {
+                return bool.Parse(Config["SaveResult"]);
+            }
+        }
+
         public string UnknownFile
         {
             get

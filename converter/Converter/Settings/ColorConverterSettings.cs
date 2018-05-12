@@ -12,14 +12,6 @@ namespace Converter.Settings
             _fcolours = LazyStringArray("FColours");
         }
 
-        public bool SaveResult
-        {
-            get
-            {
-                return bool.Parse(Config["SaveResult"]);
-            }
-        }
-
         public bool DeleteAllFColours
         {
             get
