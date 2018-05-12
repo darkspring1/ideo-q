@@ -10,50 +10,39 @@ namespace Converter.Color
 
     class ColorConvertStrategy : BaseConvertStrategy<ColorConverterSettings>
     {
+        ColorConverter _converter;
+        TermTaxonomy[] _fcolours;
+
         public ColorConvertStrategy(Dao dao, ILogger<ColorConvertStrategy> logger, ColorConverterSettings settings) : base(dao, logger, settings)
         {
            
         }
 
-        public void Execute()
+        protected override void BeforeExecute()
         {
-            ResetResultFiles();
-            
-                if (Settings.DeleteAllFColours)
-                {
-                    Dao.DeleteAllFColours();
-                    Logger.LogInformation("All fcolours and their relationships were deleted");
-                }
+            if (Settings.DeleteAllFColours)
+            {
+                Dao.DeleteAllFColours();
+                Logger.LogInformation("All fcolours and their relationships were deleted");
+            }
 
-                UpdateFColours(Dao);
+            UpdateFColours(Dao);
 
-                var fcolours = Dao.GetFColours();
-                var colorConverter = CreateColorConverter(fcolours, Settings);
-                var posts = Dao.GetPosts();
+            _fcolours = Dao.GetFColours();
+            _converter = CreateColorConverter(_fcolours, Settings);
+        }
 
-                foreach (var p in posts)
-                {
-                    ConverPost(p, colorConverter);
-                }
+        protected override void AfterSave()
+        {
+            //проставим количество
+            var taxonomyWithCounts = Dao.GetFColorTaxonomyCount();
 
-                if (Settings.SaveResult)
-                {
-                    //сохним новые fcolours
-                    Dao.SaveChanges();
+            foreach (var fcolor in _fcolours)
+            {
+                fcolor.count = taxonomyWithCounts[fcolor.term_taxonomy_id];
+            }
 
-                    //проставим количество
-                    var taxonomyWithCounts = Dao.GetTaxonomyCount();
-
-                    foreach (var fcolor in fcolours)
-                    {
-                        fcolor.count = taxonomyWithCounts[fcolor.term_taxonomy_id];
-                    }
-
-                    Dao.SaveChanges();
-                }
-
-            
-            WriteResults();
+            Dao.SaveChanges();
         }
 
         void UpdateFColours(Dao dao)
@@ -111,13 +100,14 @@ namespace Converter.Color
             return new ColorConverter(fcolours, mapping);
         }
 
-        void ConverPost(Post post, ColorConverter converter)
+
+        protected override void ConverPost(Post post)
         {
             if (post.Colours.Any())
             {
                 foreach (var color in post.Colours)
                 {
-                    var fcolours = converter.ConvertToFilterable(color);
+                    var fcolours = _converter.ConvertToFilterable(color);
                     if (fcolours == null || !fcolours.Any())
                     {
                         WriteToUnknownColoursFile($"PostId:{post.ID}, TermId:{color.term_id}, TermName:{color.Term.LowerName}");

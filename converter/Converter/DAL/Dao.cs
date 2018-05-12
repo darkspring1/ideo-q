@@ -83,12 +83,17 @@ COMMIT;";
             return posts;
         }
 
-        public IDictionary<long, long> GetTaxonomyCount()
+        IDictionary<long, long> GetTaxonomyCount(string taxonomy)
         {
             return DataContext
                 .Set<TaxonomyWithCount>()
-                .FromSql(string.Format(CMD_SELECT_TERM_TAXONOMY_COUNT, Taxonomy.PA_FCOLOR))
-                .ToDictionary(x => x.term_taxonomy_id, x => x.count); 
+                .FromSql(string.Format(CMD_SELECT_TERM_TAXONOMY_COUNT, taxonomy))
+                .ToDictionary(x => x.term_taxonomy_id, x => x.count);
+        }
+
+        public IDictionary<long, long> GetFColorTaxonomyCount()
+        {
+            return GetTaxonomyCount(Taxonomy.PA_FCOLOR);
         }
 
         TermTaxonomy[] GetTermTaxonomies(string taxonomy, bool asNoTracking = false)

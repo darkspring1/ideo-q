@@ -2,10 +2,11 @@
 using Microsoft.Extensions.Logging;
 using System.IO;
 using Converter.Settings;
+using Converter.DAL.Entity;
 
 namespace Converter
 {
-    class BaseConvertStrategy<T>
+    abstract class BaseConvertStrategy<T>
         where T : BaseConverterSettings
     {
         protected Dao Dao { get; }
@@ -68,7 +69,38 @@ namespace Converter
             {
                 File.Delete(Settings.UnknownFile);
             }
+        }
 
+
+        protected abstract void BeforeExecute();
+
+        protected abstract void AfterSave();
+
+        protected abstract void ConverPost(Post post);
+
+        public void Execute()
+        {
+            ResetResultFiles();
+
+            BeforeExecute();
+
+            var posts = Dao.GetPosts();
+
+            foreach (var p in posts)
+            {
+                ConverPost(p);
+            }
+
+            if (Settings.SaveResult)
+            {
+                //сохним новые fcolours
+                Dao.SaveChanges();
+
+                AfterSave();
+            }
+
+
+            WriteResults();
         }
     }
 }

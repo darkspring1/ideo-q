@@ -17,20 +17,16 @@ namespace Converter.Size
             Dao dao, ILogger<SizeConvertStrategy> logger, SizeConverterSettings settings,
             IMemoryCache cache) : base(dao, logger, settings)
         {
-            
             _cache = cache;
         }
 
-        public void Execute()
+        protected override void BeforeExecute()
         {
-            //UpdateFColours();
             LoadExistedFSizesToCache();
-            var posts = Dao.GetPosts();
+        }
 
-            foreach (var p in posts)
-            {
-                ConverPost(p/*, colorConverter*/);
-            }
+        protected override void AfterSave()
+        {
             
         }
 
@@ -58,43 +54,6 @@ namespace Converter.Size
             }
         }
 
-        /*
-        void UpdateFColours()
-        {
-            var fsizes = GetFSizesFromSettings();
-            
-            if (fsizes.Any())
-            {
-                var existedFColours = dao
-                    .GetFilterableColours(true);
-                var existedFColoursNames = existedFColours.Select(x => x.Term.LowerName).ToArray();
-
-                var forDelete = existedFColours
-                    .Where(x => !_settings.FColours.Contains(x.Term.LowerName))
-                    .ToArray();
-
-                var forAdd = _settings
-                    .FColours
-                    .Where(x => !existedFColoursNames.Contains(x))
-                    .ToArray();
-
-                dao.DeleteFColours(forDelete);
-                dao.CreateFColours(forAdd);
-                dao.SaveChanges();
-
-                if (forDelete.Any())
-                {
-                    _logger.LogInformation($"fcolours were deleted: {string.Join(",", forDelete.Select(x => x.Term.LowerName))}");
-                }
-                if (forAdd.Any())
-                {
-                    _logger.LogInformation($"fcolours were added: {string.Join(",", forAdd)}");
-                }
-            }
-
-        }
-        */
-
         SizeChart GetSizeChart(TermTaxonomy[] cats)
         {
             foreach (var cat in cats)
@@ -103,8 +62,6 @@ namespace Converter.Size
                 var key = $"sizeChart_{categoryName}";
                 var sizeChart = _cache.GetOrCreate(key, cacheEntry =>
                 {
-                    //cacheEntry.
-
                     var binding = Settings.SizeChartBindings.FirstOrDefault(x => x.Categories.Contains(categoryName));
                     if (binding == null)
                     {
@@ -129,7 +86,7 @@ namespace Converter.Size
             });
         }
         
-        void ConverPost(Post post/*, ColorConverter converter*/)
+        protected override void ConverPost(Post post)
         {
             if (post.Sizes.Any())
             {
