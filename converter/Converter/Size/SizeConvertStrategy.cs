@@ -5,6 +5,7 @@ using System.Linq;
 using Converter.DAL.Entity;
 using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Collections.Generic;
 
 namespace Converter.Size
 {
@@ -12,14 +13,22 @@ namespace Converter.Size
     {
         const string FSIZE_CACHE_KEY_TEMPLATE = "fsize_{0}";
         private readonly IMemoryCache _cache;
-        private readonly SizeConverter _converter;
+        
+
+
+        private readonly AsIsConverter _asIsConverter;
+        private readonly DirectMappingConverter _directMappingConverter;
+        private readonly SeparateBySlashConverter _separateBySlashConverter;
+
 
         public SizeConvertStrategy(
             Dao dao, ILogger<SizeConvertStrategy> logger, SizeConverterSettings settings,
             IMemoryCache cache) : base(dao, logger, settings)
         {
             _cache = cache;
-            _converter = new SizeConverter(Settings.DirectMapping, _cache);
+            _asIsConverter = new AsIsConverter();
+            _directMappingConverter = new DirectMappingConverter(Settings.DirectMapping);
+            _separateBySlashConverter = new SeparateBySlashConverter();
         }
 
         protected override void BeforeExecute()
@@ -87,6 +96,21 @@ namespace Converter.Size
                 return Dao.CreateFSize(fsizeName);
             });
         }
+
+        string[] Convert(string originalSize, IEnumerable<ISizeConverter> converters, out bool wasConverted)
+        {
+            wasConverted = false;
+            string[] result = null;
+            foreach (var converter in converters)
+            {
+                result = converter.Convert(originalSize, out wasConverted);
+                if (wasConverted)
+                {
+                    break;
+                }
+            }
+            return result;
+        }
         
         protected override void ConverPost(Post post)
         {
@@ -95,15 +119,26 @@ namespace Converter.Size
                 if (post.Categories.Any())
                 {
                     var sizeChart = GetSizeChart(post.Categories);
+                    List<ISizeConverter> converters = new List<ISizeConverter>();
+                    //порядок в котором добавлются конвертеры важен!!
+                    converters.Add(_directMappingConverter);
+                    
                     if (sizeChart == null)
                     {
                         Logger.LogInformation($"Post {post.ID} has no size chart");
                     }
-                  
+                    else
+                    {
+                        converters.Add(new SizeChartConverter(sizeChart, _cache));
+                    }
+
+                    converters.Add(_separateBySlashConverter);
+                    converters.Add(_asIsConverter);
+
                     foreach (var size in post.Sizes)
                     {
                         bool wasConverted = false;
-                        var fsizeNames = _converter.Convert(sizeChart, size.TermName, out wasConverted);
+                        var fsizeNames = Convert(size.TermName, converters, out wasConverted);
                         var setFSizeNames = "";
                         foreach (var fsizeName in fsizeNames)
                         {

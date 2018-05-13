@@ -14,6 +14,7 @@ namespace Converter.Settings
         {
             var key = configSize.Replace(" ", "").ToLower();
             var value = key;
+            /*
             if (key.IndexOf(UK) == 0 || key.IndexOf(US) == 0)
             {
                 value = $"{configSize.Substring(0, 2)} {configSize.Substring(2)}";
@@ -22,7 +23,7 @@ namespace Converter.Settings
             {
                 value = $"{EUR} {configSize.Substring(3)}";
             }
-
+            */
             return new KeyValuePair<string, string>(key, value);
         }
 

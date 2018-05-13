@@ -5,15 +5,18 @@ using System.Linq;
 
 namespace Converter.Size
 {
-
-    class SizeConverter
+    /// <summary>
+    /// Конвертит по таблице
+    /// </summary>
+    class SizeChartConverter : ISizeConverter
     {
+        private readonly ISizeChart _sizeChart;
         private readonly IDictionary<string, List<string>> _directMapping;
         private readonly IMemoryCache _cache;
 
-        public SizeConverter(IDictionary<string, List<string>> directMapping, IMemoryCache cache)
+        public SizeChartConverter(ISizeChart sizeChart, IMemoryCache cache)
         {
-            _directMapping = directMapping;
+            _sizeChart = sizeChart;
             _cache = cache;
         }
 
@@ -36,25 +39,18 @@ namespace Converter.Size
             return result;
         }
 
-        public string[] Convert(ISizeChart sizeChart, string originalSize, out bool wasConverted)
+        public string[] Convert(string originalSize, out bool wasConverted)
         {
-            if (_directMapping.ContainsKey(originalSize))
+
+            var result = GetFSizes(_sizeChart, originalSize);
+            if (result != null)
             {
                 wasConverted = true;
-                return _directMapping[originalSize].ToArray();
+                return result.Select(x => x.Value).ToArray();
             }
 
-            if (sizeChart != null)
-            {
-                var result = GetFSizes(sizeChart, originalSize);
-                if (result != null)
-                {
-                    wasConverted = true;
-                    return result.Select(x => x.Value).ToArray();
-                }
-            }
             wasConverted = false;
-            return new[] { originalSize };
+            return null;
         }
     }
 }
