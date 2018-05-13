@@ -21,6 +21,17 @@ namespace Converter.Settings
             }
         }
 
+        public bool IsEnabled
+        {
+            get
+            {
+                return bool.Parse(Config["IsEnabled"]);
+            }
+        }
+
+
+        
+
         public string UnknownFile
         {
             get

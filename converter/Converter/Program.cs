@@ -40,12 +40,18 @@ namespace Converter
                 {
                     dao.InstallCustomAttributes();
 
-                    var colorStrategy = new ColorConvertStrategy(dao, loggerFactory.CreateLogger<ColorConvertStrategy>(), settings.ColorConverterSettings);
-                    
-                    using (var mc = new MemoryCache(new MemoryCacheOptions()))
+                    if (settings.ColorConverterSettings.IsEnabled)
                     {
-                        var sizeStrategy = new SizeConvertStrategy(dao, loggerFactory.CreateLogger<SizeConvertStrategy>(), settings.SizeConverterSettings, mc);
-                        sizeStrategy.Execute();
+                        var colorStrategy = new ColorConvertStrategy(dao, loggerFactory.CreateLogger<ColorConvertStrategy>(), settings.ColorConverterSettings);
+                        colorStrategy.Execute();
+                    }
+                    if (settings.SizeConverterSettings.IsEnabled)
+                    {
+                        using (var mc = new MemoryCache(new MemoryCacheOptions()))
+                        {
+                            var sizeStrategy = new SizeConvertStrategy(dao, loggerFactory.CreateLogger<SizeConvertStrategy>(), settings.SizeConverterSettings, mc);
+                            sizeStrategy.Execute();
+                        }
                     }
                 }
                 logger.LogInformation("FINISHED");
