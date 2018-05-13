@@ -14,7 +14,7 @@ namespace Converter.Settings
                 childSections
                     .Select(x => x
                                 .AsEnumerable(true)
-                                .ToDictionary(sz => sz.Key, sz => sz.Value))
+                                .ToDictionary(sz => $"{sz.Key}{sz.Value}", sz => $"{sz.Key} {sz.Value}"))
                 );
         }
 
