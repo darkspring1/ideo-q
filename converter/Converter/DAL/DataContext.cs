@@ -65,6 +65,10 @@ namespace Converter.DAL
 
             modelBuilder.Entity<TaxonomyWithCount>()
                 .HasKey(x => x.term_taxonomy_id);
+
+            modelBuilder.Entity<WpWoocommerceAttributeTaxonomy>()
+               .ToTable(Tables.WpWoocommerceAttributeTaxonomies)
+               .HasKey(x => x.attribute_id);
         }
     }
 }

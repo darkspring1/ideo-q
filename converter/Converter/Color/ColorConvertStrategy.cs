@@ -4,30 +4,24 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using Converter.Settings;
+using Converter.DAL.Constants;
 
 namespace Converter.Color
 {
-
     class ColorConvertStrategy : BaseConvertStrategy<ColorConverterSettings>
     {
         ColorConverter _converter;
         TermTaxonomy[] _fcolours;
 
-        public ColorConvertStrategy(Dao dao, ILogger<ColorConvertStrategy> logger, ColorConverterSettings settings) : base(dao, logger, settings)
+        public ColorConvertStrategy(Dao dao, ILogger<ColorConvertStrategy> logger, ColorConverterSettings settings)
+            : base(Taxonomy.PA_FCOLOR, dao, logger, settings)
         {
            
         }
 
         protected override void BeforeExecute()
         {
-            if (Settings.DeleteAllFColours)
-            {
-                Dao.DeleteAllFColours();
-                Logger.LogInformation("All fcolours and their relationships were deleted");
-            }
-
             UpdateFColours(Dao);
-
             _fcolours = Dao.GetFColours();
             _converter = CreateColorConverter(_fcolours, Settings);
         }
@@ -99,7 +93,6 @@ namespace Converter.Color
 
             return new ColorConverter(fcolours, mapping);
         }
-
 
         protected override void ConverPost(Post post)
         {

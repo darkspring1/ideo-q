@@ -20,24 +20,24 @@ SELECT tr.term_taxonomy_id term_taxonomy_id, COUNT(*) count FROM wp_term_relatio
 
 ";
 
-        const string CMD_DELETE_ALL_FCOLOURS = @"
+        const string CMD_DELETE_ALL_FATTRS = @"
 START TRANSACTION;
 
 DELETE tr
 FROM wp_term_relationships tr
 JOIN wp_term_taxonomy tt
 	ON tr.term_taxonomy_id = tt.term_taxonomy_id
-WHERE tt.taxonomy = 'pa_fcolor';
+WHERE tt.taxonomy = '{0}';
 
 DELETE t
 FROM wp_terms t
 JOIN wp_term_taxonomy tt
 	ON t.term_id = tt.term_id
-WHERE tt.taxonomy = 'pa_fcolor';
+WHERE tt.taxonomy = '{0}';
 
 DELETE tt
 FROM wp_term_taxonomy tt
-WHERE tt.taxonomy = 'pa_fcolor';
+WHERE tt.taxonomy = '{0}';
 
 COMMIT;";
 
@@ -96,6 +96,11 @@ COMMIT;";
             return GetTaxonomyCount(Taxonomy.PA_FCOLOR);
         }
 
+        public IDictionary<long, long> GetFSizeTaxonomyCount()
+        {
+            return GetTaxonomyCount(Taxonomy.PA_FSIZE);
+        }
+
         TermTaxonomy[] GetTermTaxonomies(string taxonomy, bool asNoTracking = false)
         {
             var q = DataContext.Set<TermTaxonomy>()
@@ -143,11 +148,35 @@ COMMIT;";
         }
 
         /// <summary>
-        /// Удалить все TermTaxonomy c taxonomy='pa_fcolor' из таблиц: wp_terms, wp_term_taxonomy, wp_termrelationship
+        /// Удалить все TermTaxonomy c taxonomy='pa_fcolor' или 'pa_fsize' из таблиц: wp_terms, wp_term_taxonomy, wp_termrelationship
         /// </summary>
-        public void DeleteAllFColours()
+        public void DeleteAllFAttributes(string taxonomy)
         {
-            DataContext.Database.ExecuteSqlCommand(CMD_DELETE_ALL_FCOLOURS);
+            DataContext.Database.ExecuteSqlCommand(string.Format(CMD_DELETE_ALL_FATTRS, taxonomy));
+        }
+
+        /// <summary>
+        /// создаёт в БД атрибуты fcolor и fsize
+        /// </summary>
+        public void InstallCustomAttributes()
+        {
+            var attrs = DataContext.Set<WpWoocommerceAttributeTaxonomy>()
+              .Where(x => x.attribute_name == WoocommerceAttributeName.FCOLOR || x.attribute_name == WoocommerceAttributeName.FSIZE)
+              .AsNoTracking()
+              .ToArray();
+
+            var fcolorAttr = attrs.FirstOrDefault(x => x.attribute_name == WoocommerceAttributeName.FCOLOR);
+            var fsizeAttr = attrs.FirstOrDefault(x => x.attribute_name == WoocommerceAttributeName.FSIZE);
+
+            if (fcolorAttr == null)
+            {
+                DataContext.Add(WpWoocommerceAttributeTaxonomy.Create(WoocommerceAttributeName.FCOLOR));
+            }
+            if (fsizeAttr == null)
+            {
+                DataContext.Add(WpWoocommerceAttributeTaxonomy.Create(WoocommerceAttributeName.FSIZE));
+            }
+            DataContext.SaveChanges();
         }
 
         /// <summary>

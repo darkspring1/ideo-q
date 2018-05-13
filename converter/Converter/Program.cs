@@ -38,6 +38,8 @@ namespace Converter
                 var settings = CreateSettings();
                 using (var dao = new Dao(settings.ConnectionString))
                 {
+                    dao.InstallCustomAttributes();
+
                     var colorStrategy = new ColorConvertStrategy(dao, loggerFactory.CreateLogger<ColorConvertStrategy>(), settings.ColorConverterSettings);
                     
                     using (var mc = new MemoryCache(new MemoryCacheOptions()))

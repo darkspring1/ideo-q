@@ -4,12 +4,14 @@ using System.Linq;
 
 namespace Converter.Settings
 {
-    public class BaseConverterSettings : SettingsBase
+    public abstract class BaseConverterSettings : SettingsBase
     {
         public BaseConverterSettings(IConfiguration config, string sectionName) : base(config, sectionName)
         {
             
         }
+
+        public abstract bool DeleteFAttributes { get; }
 
         public bool SaveResult
         {

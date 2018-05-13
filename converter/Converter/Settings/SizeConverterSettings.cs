@@ -53,5 +53,13 @@ namespace Converter.Settings
         public ISizeChart[] SizeCharts { get; }
 
         public SizeChartBinding[] SizeChartBindings { get; }
+
+        public override bool DeleteFAttributes
+        {
+            get
+            {
+                return bool.Parse(Config["DeleteAllFSizes"]);
+            }
+        }
     }
 }

@@ -9,5 +9,7 @@
         public const string Terms = "wp_terms";
 
         public const string TermTaxonomy = "wp_term_taxonomy";
+
+        public const string WpWoocommerceAttributeTaxonomies = "wp_woocommerce_attribute_taxonomies";
     }
 }

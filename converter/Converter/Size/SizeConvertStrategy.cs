@@ -4,8 +4,8 @@ using Converter.Settings;
 using System.Linq;
 using Converter.DAL.Entity;
 using Microsoft.Extensions.Caching.Memory;
-using System;
 using System.Collections.Generic;
+using Converter.DAL.Constants;
 
 namespace Converter.Size
 {
@@ -13,17 +13,14 @@ namespace Converter.Size
     {
         const string FSIZE_CACHE_KEY_TEMPLATE = "fsize_{0}";
         private readonly IMemoryCache _cache;
-        
-
-
+       
         private readonly AsIsConverter _asIsConverter;
         private readonly DirectMappingConverter _directMappingConverter;
         private readonly SeparateBySlashConverter _separateBySlashConverter;
 
-
         public SizeConvertStrategy(
             Dao dao, ILogger<SizeConvertStrategy> logger, SizeConverterSettings settings,
-            IMemoryCache cache) : base(dao, logger, settings)
+            IMemoryCache cache) : base(Taxonomy.PA_FSIZE, dao, logger, settings)
         {
             _cache = cache;
             _asIsConverter = new AsIsConverter();
@@ -38,7 +35,15 @@ namespace Converter.Size
 
         protected override void AfterSave()
         {
-            
+            //проставим количество
+            var taxonomyWithCounts = Dao.GetFSizeTaxonomyCount();
+            var _fsizes = Dao.GetFSizes();
+            foreach (var fsize in _fsizes)
+            {
+                fsize.count = taxonomyWithCounts[fsize.term_taxonomy_id];
+            }
+
+            Dao.SaveChanges();
         }
 
         string[] GetFSizesFromSettings()
@@ -61,7 +66,7 @@ namespace Converter.Size
 
             foreach (var fsize in fsizes)
             {
-                _cache.Set(string.Format(FSIZE_CACHE_KEY_TEMPLATE, fsize.Term.LowerName), fsize);
+                _cache.Set(string.Format(FSIZE_CACHE_KEY_TEMPLATE, fsize.TermName), fsize);
             }
         }
 

@@ -15,9 +15,11 @@ namespace Converter
 
         private long ConvertedItemsCounter = 0;
         private long UnknownItemsCounter = 0;
+        private readonly string _fAttributeTaxonomy;
 
-        public BaseConvertStrategy(Dao dao, ILogger logger, T settings)
+        public BaseConvertStrategy(string fAttributeTaxonomy, Dao dao, ILogger logger, T settings)
         {
+            _fAttributeTaxonomy = fAttributeTaxonomy;
             Dao = dao;
             Logger = logger;
             Settings = settings;
@@ -83,6 +85,12 @@ namespace Converter
         public void Execute()
         {
             ResetResultFiles();
+
+            if (Settings.DeleteFAttributes)
+            {
+                Dao.DeleteAllFAttributes(_fAttributeTaxonomy);
+                Logger.LogInformation($"All fAttributes('{_fAttributeTaxonomy}') and their relationships were deleted");
+            }
 
             BeforeExecute();
 

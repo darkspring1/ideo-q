@@ -10,15 +10,13 @@ namespace Converter.Settings
             _fcolours = LazyStringArray("FColours");
         }
 
-        public bool DeleteAllFColours
+        public override bool DeleteFAttributes
         {
             get
             {
                 return bool.Parse(Config["DeleteAllFColours"]);
             }
         }
-
-        
 
         Lazy<string[]> _fcolours;
 
