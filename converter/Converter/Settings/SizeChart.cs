@@ -6,16 +6,36 @@ namespace Converter.Settings
 {
     public class SizeChart : List<Dictionary<string, string>>
     {
+        const string UK = "uk";
+        const string US = "us";
+        const string EUR = "eur";
+
+        KeyValuePair<string, string> GetKVP(string configSize)
+        {
+            var key = configSize.Replace(" ", "").ToLower();
+            var value = key;
+            if (key.IndexOf(UK) == 0 || key.IndexOf(US) == 0)
+            {
+                value = $"{configSize.Substring(0, 2)} {configSize.Substring(2)}";
+            }
+            else if (key.IndexOf(EUR) == 0)
+            {
+                value = $"{EUR} {configSize.Substring(3)}";
+            }
+
+            return new KeyValuePair<string, string>(key, value);
+        }
+
         public SizeChart(IConfigurationSection config)
         {
             Name = config.Key.ToLower();
             var childSections = config.GetChildren();
-            AddRange(
-                childSections
-                    .Select(x => x
-                                .AsEnumerable(true)
-                                .ToDictionary(sz => $"{sz.Key}{sz.Value}", sz => $"{sz.Key} {sz.Value}"))
-                );
+
+            foreach (var child in childSections)
+            {
+                var szDictionary = child.GetChildren().Select(x => GetKVP(x.Value)).ToDictionary(x => x.Key, x => x.Value);
+                Add(szDictionary);
+            }
         }
 
         public string Name { get; }
