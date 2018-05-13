@@ -17,7 +17,7 @@ namespace Converter.Size
             _cache = cache;
         }
 
-        Dictionary<string, string> GetFSizes(SizeChart sizeChart, string originalSize)
+        IDictionary<string, string> GetFSizes(ISizeChart sizeChart, string originalSize)
         {
             var key = $"{originalSize}_{sizeChart.Name}";
 
@@ -36,7 +36,7 @@ namespace Converter.Size
             return result;
         }
 
-        public string[] Convert(SizeChart sizeChart, string originalSize, out bool wasConverted)
+        public string[] Convert(ISizeChart sizeChart, string originalSize, out bool wasConverted)
         {
             if (_directMapping.ContainsKey(originalSize))
             {

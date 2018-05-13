@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Converter.Settings
 {
-    public class SizeChart : List<Dictionary<string, string>>
+    public class SizeChart : List<IDictionary<string, string>>, ISizeChart
     {
         const string UK = "uk";
         const string US = "us";

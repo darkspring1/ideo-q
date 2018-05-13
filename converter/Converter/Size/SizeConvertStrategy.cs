@@ -56,7 +56,7 @@ namespace Converter.Size
             }
         }
 
-        SizeChart GetSizeChart(TermTaxonomy[] cats)
+        ISizeChart GetSizeChart(TermTaxonomy[] cats)
         {
             foreach (var cat in cats)
             {

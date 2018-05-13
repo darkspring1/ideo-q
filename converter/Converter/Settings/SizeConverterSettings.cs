@@ -9,14 +9,25 @@ namespace Converter.Settings
     {
         Lazy<string[]> _shoesCategories;
         
-        private SizeChart[] CreateSizeCharts()
+        private ISizeChart[] CreateSizeCharts()
         {
+            const string bra_sizes = "bra_sizes";
+            const string cup_sizes = "cup_sizes";
+
             var section = Config.GetSection("SizeCharts");
-            
-            return section
+
+            var braSizesSection = section.GetSection(bra_sizes);
+            var cupSizesSection = section.GetSection(cup_sizes);
+
+            var result = section
                 .GetChildren()
+                .Where(x => x.Key != bra_sizes || x.Key != cup_sizes)
                 .Select(x => new SizeChart(x))
-                .ToArray();
+                .ToList<ISizeChart>();
+
+            result.Add(new BraSizeChart(braSizesSection, cupSizesSection));
+            return result.ToArray();
+
         }
 
         private SizeChartBinding[] CreateSizeChartBindings()
@@ -39,7 +50,7 @@ namespace Converter.Settings
 
         public string[] ShoesCategories => _shoesCategories.Value;
 
-        public SizeChart[] SizeCharts { get; }
+        public ISizeChart[] SizeCharts { get; }
 
         public SizeChartBinding[] SizeChartBindings { get; }
     }
