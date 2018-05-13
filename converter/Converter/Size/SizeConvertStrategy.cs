@@ -19,7 +19,7 @@ namespace Converter.Size
             IMemoryCache cache) : base(dao, logger, settings)
         {
             _cache = cache;
-            _converter = new SizeConverter(_cache);
+            _converter = new SizeConverter(Settings.DirectMapping, _cache);
         }
 
         protected override void BeforeExecute()
@@ -124,7 +124,8 @@ namespace Converter.Size
                         if (!wasConverted)
                         {
                             var categoriesStr = string.Join(",", post.Categories.Select(x => x.TermName));
-                            WriteToUnknownFile($"PostId:{post.ID}, TermId:{size.term_id}, TermName:{size.TermName}, Categories: {categoriesStr}");
+                            var sizeChartName = sizeChart?.Name ?? "not found";
+                            WriteToUnknownFile($"PostId:{post.ID}, TermId:{size.term_id}, TermName:{size.TermName}, SizeChart: {sizeChartName}, Categories: {categoriesStr}");
                         }
                     }
                 }

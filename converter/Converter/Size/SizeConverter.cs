@@ -8,10 +8,12 @@ namespace Converter.Size
 
     class SizeConverter
     {
+        private readonly IDictionary<string, List<string>> _directMapping;
         private readonly IMemoryCache _cache;
 
-        public SizeConverter(IMemoryCache cache)
+        public SizeConverter(IDictionary<string, List<string>> directMapping, IMemoryCache cache)
         {
+            _directMapping = directMapping;
             _cache = cache;
         }
 
@@ -36,6 +38,12 @@ namespace Converter.Size
 
         public string[] Convert(SizeChart sizeChart, string originalSize, out bool wasConverted)
         {
+            if (_directMapping.ContainsKey(originalSize))
+            {
+                wasConverted = true;
+                return _directMapping[originalSize].ToArray();
+            }
+
             if (sizeChart != null)
             {
                 var result = GetFSizes(sizeChart, originalSize);

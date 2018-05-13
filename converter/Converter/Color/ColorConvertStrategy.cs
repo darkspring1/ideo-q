@@ -82,7 +82,7 @@ namespace Converter.Color
         {
             var mapping = new Dictionary<string, List<TermTaxonomy>>();
             
-            foreach (var mappingItem in settings.ColorMapping)
+            foreach (var mappingItem in settings.DirectMapping)
             {
                 var key = mappingItem.Key;
                 var value = new List<TermTaxonomy>();
