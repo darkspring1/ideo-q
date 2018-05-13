@@ -110,25 +110,26 @@ namespace Converter.Color
                     var fcolours = _converter.ConvertToFilterable(color);
                     if (fcolours == null || !fcolours.Any())
                     {
-                        WriteToUnknownColoursFile($"PostId:{post.ID}, TermId:{color.term_id}, TermName:{color.Term.LowerName}");
-                        UnknownItemsCounter++;
+                        WriteToUnknownFile($"PostId:{post.ID}, TermId:{color.term_id}, TermName:{color.Term.LowerName}");
                     }
                     else
                     {
+                        var setFColorNames = "";
                         foreach (var fcolor in fcolours)
                         {
-                            if (!post.SetFColour(fcolor))
+                            if (post.SetFColour(fcolor))
                             {
-                                Logger.LogInformation($"fcolor {fcolor.Term.LowerName} already set for post {post.ID}.");
+                                setFColorNames += $"{fcolor.Term.LowerName},";
                             }
                             else
                             {
-                                //запись дублируется в логе, вынести из цикла
-                                var fcoloursNames = fcolours.Select(x => x.Term.LowerName);
-                                WriteToResultFile($"postId: {post.ID} {color.Term.LowerName} => {string.Join(",", fcoloursNames)}");
-                                ConvertedItemsCounter++;
+                                Logger.LogInformation($"fcolor {fcolor.Term.LowerName} already set for post {post.ID}.");
                             }
+                        }
 
+                        if (setFColorNames != "")
+                        {
+                            WriteToResultFile($"postId: {post.ID} {color.Term.LowerName} => {setFColorNames.TrimEnd(',')}");
                         }
 
                     }

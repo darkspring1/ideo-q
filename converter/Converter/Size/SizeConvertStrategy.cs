@@ -12,12 +12,14 @@ namespace Converter.Size
     {
         const string FSIZE_CACHE_KEY_TEMPLATE = "fsize_{0}";
         private readonly IMemoryCache _cache;
-        
+        private readonly SizeConverter _converter;
+
         public SizeConvertStrategy(
             Dao dao, ILogger<SizeConvertStrategy> logger, SizeConverterSettings settings,
             IMemoryCache cache) : base(dao, logger, settings)
         {
             _cache = cache;
+            _converter = new SizeConverter(_cache);
         }
 
         protected override void BeforeExecute()
@@ -93,38 +95,38 @@ namespace Converter.Size
                 if (post.Categories.Any())
                 {
                     var sizeChart = GetSizeChart(post.Categories);
-                    var converter = new SizeConverter(sizeChart);
-                    Func<TermTaxonomy, string[]> convertFunc;
-                    if (sizeChart != null)
-                    {
-                        convertFunc = size => converter.Convert(size.Term.LowerName);
-                    }
-                    else
+                    if (sizeChart == null)
                     {
                         Logger.LogInformation($"Post {post.ID} has no size chart");
-                        convertFunc = size => new[] { size.Term.LowerName };
                     }
-
+                  
                     foreach (var size in post.Sizes)
                     {
-                        var fsizeNames = convertFunc(size);
+                        bool wasConverted = false;
+                        var fsizeNames = _converter.Convert(sizeChart, size.TermName, out wasConverted);
+                        var setFSizeNames = "";
                         foreach (var fsizeName in fsizeNames)
                         {
                             var fsize = GetFSize(fsizeName);
                             if (post.SetFSize(fsize))
                             {
-                                ConvertedItemsCounter++;
+                                setFSizeNames += $"{fsizeName},";
                             }
                             else
                             {
-                                Logger.LogInformation($"fsize {fsize.Term.LowerName} already set for post {post.ID}.");
+                                Logger.LogInformation($"fsize {fsize.TermName} already set for post {post.ID}.");
                             }
-
-                            
                         }
-                        WriteToResultFile($"postId: {post.ID} {size.Term.LowerName} => {string.Join(",", fsizeNames)}");
+                        if (setFSizeNames != "")
+                        {
+                            WriteToResultFile($"postId: {post.ID}, {size.TermName} => {setFSizeNames.TrimEnd(',')}");
+                        }
+                        if (!wasConverted)
+                        {
+                            var categoriesStr = string.Join(",", post.Categories.Select(x => x.TermName));
+                            WriteToUnknownFile($"PostId:{post.ID}, TermId:{size.term_id}, TermName:{size.TermName}, Categories: {categoriesStr}");
+                        }
                     }
-                    
                 }
                 else
                 {

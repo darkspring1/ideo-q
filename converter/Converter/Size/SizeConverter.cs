@@ -1,18 +1,52 @@
 ﻿using Converter.Settings;
-using System;
+using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Converter.Size
 {
+
     class SizeConverter
     {
-        public SizeConverter(SizeChart sizeChart)
-        {
+        private readonly IMemoryCache _cache;
 
+        public SizeConverter(IMemoryCache cache)
+        {
+            _cache = cache;
         }
 
-        public string[] Convert(string originalColor)
+        Dictionary<string, string> GetFSizes(SizeChart sizeChart, string originalSize)
         {
-            throw new NotImplementedException();
+            var key = $"{originalSize}_{sizeChart.Name}";
+
+            var result = _cache.GetOrCreate(key, cacheEntry =>
+            {
+                foreach (var szDictionary in sizeChart)
+                {
+                    if (szDictionary.ContainsKey(originalSize))
+                    {
+                        return szDictionary;
+                    }
+                }
+                return null;
+            });
+
+            return result;
+        }
+
+        public string[] Convert(SizeChart sizeChart, string originalSize, out bool wasConverted)
+        {
+            if (sizeChart != null)
+            {
+                var result = GetFSizes(sizeChart, originalSize);
+                if (result != null)
+                {
+                    wasConverted = true;
+                    return result.Select(x => x.Value).ToArray();
+                }
+            }
+            wasConverted = false;
+            return new[] { originalSize };
         }
     }
 }

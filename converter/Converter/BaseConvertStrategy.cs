@@ -13,8 +13,8 @@ namespace Converter
         protected  ILogger Logger { get; }
         protected T Settings { get; }
 
-        protected long ConvertedItemsCounter = 0;
-        protected long UnknownItemsCounter = 0;
+        private long ConvertedItemsCounter = 0;
+        private long UnknownItemsCounter = 0;
 
         public BaseConvertStrategy(Dao dao, ILogger logger, T settings)
         {
@@ -41,11 +41,13 @@ namespace Converter
         protected void WriteToResultFile(params string[] lines)
         {
             File.AppendAllLines(Settings.ResultFile, lines);
+            ConvertedItemsCounter++;
         }
 
-        protected void WriteToUnknownColoursFile(params string[] lines)
+        protected void WriteToUnknownFile(params string[] lines)
         {
             File.AppendAllLines(Settings.UnknownFile, lines);
+            UnknownItemsCounter++;
         }
 
 

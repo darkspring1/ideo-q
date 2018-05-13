@@ -18,6 +18,8 @@ namespace Converter.DAL.Entity
 
         public Term Term { get; set; }
 
+        public string TermName => Term?.LowerName;
+
 
         public static TermTaxonomy CreateFColour(string fcolourName)
         {
