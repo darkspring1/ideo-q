@@ -11,33 +11,32 @@ namespace Converter.DAL
     {
         const string CMD_SELECT_TERM_TAXONOMY_COUNT = @"
 
-SELECT tr.term_taxonomy_id term_taxonomy_id, COUNT(*) count FROM wp_term_relationships tr
-	JOIN wp_term_taxonomy tt
+SELECT tr.term_taxonomy_id term_taxonomy_id, COUNT(*) count FROM {0}term_relationships tr
+	JOIN {0}term_taxonomy tt
 		ON tt.term_taxonomy_id = tr.term_taxonomy_id
 		
-	WHERE tt.taxonomy = '{0}'
+	WHERE tt.taxonomy = '{1}'
 	GROUP BY (tr.term_taxonomy_id);
-
 ";
 
         const string CMD_DELETE_ALL_FATTRS = @"
 START TRANSACTION;
 
 DELETE tr
-FROM wp_term_relationships tr
-JOIN wp_term_taxonomy tt
+FROM {0}term_relationships tr
+JOIN {0}term_taxonomy tt
 	ON tr.term_taxonomy_id = tt.term_taxonomy_id
-WHERE tt.taxonomy = '{0}';
+WHERE tt.taxonomy = '{1}';
 
 DELETE t
-FROM wp_terms t
-JOIN wp_term_taxonomy tt
+FROM {0}terms t
+JOIN {0}term_taxonomy tt
 	ON t.term_id = tt.term_id
-WHERE tt.taxonomy = '{0}';
+WHERE tt.taxonomy = '{1}';
 
 DELETE tt
-FROM wp_term_taxonomy tt
-WHERE tt.taxonomy = '{0}';
+FROM {0}term_taxonomy tt
+WHERE tt.taxonomy = '{1}';
 
 COMMIT;";
 
@@ -51,16 +50,19 @@ COMMIT;";
             {
                 if (_dataContext == null)
                 {
-                    _dataContext = new DataContext(_connectionString);
+                    _dataContext = new DataContext(_prefix, _connectionString);
                 }
 
                 return _dataContext;
             }
         }
-        
-        public Dao(string connectionString)
+
+        readonly string _prefix;
+
+        public Dao(string prefix, string connectionString)
         {
-            this._connectionString = connectionString;
+            _prefix = prefix;
+            _connectionString = connectionString;
         }
 
         public void Dispose()
@@ -87,7 +89,7 @@ COMMIT;";
         {
             return DataContext
                 .Set<TaxonomyWithCount>()
-                .FromSql(string.Format(CMD_SELECT_TERM_TAXONOMY_COUNT, taxonomy))
+                .FromSql(string.Format(CMD_SELECT_TERM_TAXONOMY_COUNT, _prefix, taxonomy))
                 .ToDictionary(x => x.term_taxonomy_id, x => x.count);
         }
 
@@ -138,9 +140,9 @@ COMMIT;";
                 var taxonomyIds = string.Join(",", termTaxonomiesForRemove.Select(x => x.term_taxonomy_id));
                 var termIds = string.Join(",", termTaxonomiesForRemove.Select(x => x.term_id));
 
-                var deleteTermRelationshipCmd = $"DELETE FROM {Tables.TermRelationships} WHERE term_taxonomy_id IN ({taxonomyIds})";
-                var deleteTermTaxonomyCmd = $"DELETE FROM {Tables.TermTaxonomy} WHERE term_taxonomy_id IN ({taxonomyIds})";
-                var deleteTermCmd = $"DELETE FROM {Tables.Terms} WHERE term_id IN ({termIds})";
+                var deleteTermRelationshipCmd = $"DELETE FROM {_prefix}{Tables.TermRelationships} WHERE term_taxonomy_id IN ({taxonomyIds})";
+                var deleteTermTaxonomyCmd = $"DELETE FROM {_prefix}{Tables.TermTaxonomy} WHERE term_taxonomy_id IN ({taxonomyIds})";
+                var deleteTermCmd = $"DELETE FROM {_prefix}{Tables.Terms} WHERE term_id IN ({termIds})";
                 _dataContext.Database.ExecuteSqlCommand(deleteTermRelationshipCmd);
                 _dataContext.Database.ExecuteSqlCommand(deleteTermTaxonomyCmd);
                 _dataContext.Database.ExecuteSqlCommand(deleteTermCmd);
@@ -152,7 +154,7 @@ COMMIT;";
         /// </summary>
         public void DeleteAllFAttributes(string taxonomy)
         {
-            DataContext.Database.ExecuteSqlCommand(string.Format(CMD_DELETE_ALL_FATTRS, taxonomy));
+            DataContext.Database.ExecuteSqlCommand(string.Format(CMD_DELETE_ALL_FATTRS, _prefix, taxonomy));
         }
 
         /// <summary>

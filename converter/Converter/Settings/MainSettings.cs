@@ -17,6 +17,8 @@ namespace Converter.Settings
 
         public SizeConverterSettings SizeConverterSettings { get; }
 
+        public string TablePrefix => _config["TablePrefix"];
+
         public string ConnectionString
         {
             get

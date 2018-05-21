@@ -7,16 +7,18 @@ namespace Converter.DAL
 
     public class DataContext : DbContext
     {
-        private readonly string connectionString;
+        private readonly string _tablePrefix;
+        private readonly string _connectionString;
 
-        public DataContext(string connectionString)
+        public DataContext(string tablePrefix, string connectionString)
         {
-            this.connectionString = connectionString;
+            _tablePrefix = tablePrefix;
+            _connectionString = connectionString;
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySQL(connectionString);
+            optionsBuilder.UseMySQL(_connectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -25,7 +27,7 @@ namespace Converter.DAL
 
             var postBuilder = modelBuilder.Entity<Post>();
             postBuilder
-                .ToTable(Tables.Posts)
+                .ToTable($"{_tablePrefix}{Tables.Posts}")
                 .HasKey(x => x.ID);
 
             postBuilder
@@ -41,7 +43,7 @@ namespace Converter.DAL
 
             var termRelationship = modelBuilder.Entity<TermRelationship>();
                 termRelationship
-                .ToTable(Tables.TermRelationships)
+                .ToTable($"{_tablePrefix}{Tables.TermRelationships}")
                 .HasKey(x => new { x.object_id, x.term_taxonomy_id });
 
             termRelationship
@@ -50,12 +52,12 @@ namespace Converter.DAL
                 .HasForeignKey(x => x.term_taxonomy_id);
 
             modelBuilder.Entity<Term>()
-                .ToTable(Tables.Terms)
+                .ToTable($"{_tablePrefix}{Tables.Terms}")
                 .HasKey(x => x.term_id);
 
             var termTaxonomyBuilder = modelBuilder.Entity<TermTaxonomy>();
                 termTaxonomyBuilder
-                .ToTable(Tables.TermTaxonomy)
+                .ToTable($"{_tablePrefix}{Tables.TermTaxonomy}")
                 .HasKey(t => t.term_taxonomy_id);
 
             termTaxonomyBuilder
@@ -67,7 +69,7 @@ namespace Converter.DAL
                 .HasKey(x => x.term_taxonomy_id);
 
             modelBuilder.Entity<WpWoocommerceAttributeTaxonomy>()
-               .ToTable(Tables.WpWoocommerceAttributeTaxonomies)
+               .ToTable($"{_tablePrefix}{Tables.WpWoocommerceAttributeTaxonomies}")
                .HasKey(x => x.attribute_id);
         }
     }

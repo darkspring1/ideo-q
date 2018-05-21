@@ -36,7 +36,7 @@ namespace Converter
             try
             {
                 var settings = CreateSettings();
-                using (var dao = new Dao(settings.ConnectionString))
+                using (var dao = new Dao(settings.TablePrefix, settings.ConnectionString))
                 {
                     dao.InstallCustomAttributes();
 
