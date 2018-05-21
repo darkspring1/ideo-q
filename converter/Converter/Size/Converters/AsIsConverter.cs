@@ -8,7 +8,7 @@
         public string[] Convert(string originalSize, out bool wasConverted)
         {
             wasConverted = false;
-            return new[] { originalSize.Replace(" ", "").ToLower() };
+            return new[] { originalSize.ToLower() };
         }
     }
 }

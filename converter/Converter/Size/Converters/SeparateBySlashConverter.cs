@@ -10,7 +10,7 @@ namespace Converter.Size
         public string[] Convert(string originalSize, out bool wasConverted)
         {
             var szArray = originalSize.Split("/");
-            if (!szArray.Any())
+            if (szArray.Length <= 1)
             {
                 wasConverted = false;
                 return null;
