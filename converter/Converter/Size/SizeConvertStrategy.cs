@@ -33,7 +33,6 @@ namespace Converter.Size
 
         protected override void AfterSave()
         {
-            Logger.LogInformation($"Save results...");
             //проставим количество
             var taxonomyWithCounts = Dao.GetFSizeTaxonomyCount();
             var _fsizes = Dao.GetFSizes();
@@ -126,37 +125,44 @@ namespace Converter.Size
 
                     foreach (var size in post.Sizes)
                     {
-                        var convertResult = converters.Convert(size.TermName);
-                        string[] fsizeNames = converters.Convert(size.TermName);
-                        bool wasConverted = true;
-                        if (!fsizeNames.Any())
+                        if (Settings.Ignore.Any(x => x == size.TermName))
                         {
-                            fsizeNames = new[] { size.TermName };
-                            wasConverted = false;
+                            WriteToResultFile($"postId: {post.ID}, {size.TermName} => IGNORED");
                         }
+                        else
+                        {
+                            var convertResult = converters.Convert(size.TermName);
+                            string[] fsizeNames = converters.Convert(size.TermName);
+                            bool wasConverted = true;
+                            if (!fsizeNames.Any())
+                            {
+                                fsizeNames = new[] { size.TermName };
+                                wasConverted = false;
+                            }
 
-                        var setFSizeNames = "";
-                        foreach (var fsizeName in fsizeNames)
-                        {
-                            var fsize = GetFSize(fsizeName);
-                            if (post.SetFSize(fsize))
+                            var setFSizeNames = "";
+                            foreach (var fsizeName in fsizeNames)
                             {
-                                setFSizeNames += $"{fsizeName},";
+                                var fsize = GetFSize(fsizeName);
+                                if (post.SetFSize(fsize))
+                                {
+                                    setFSizeNames += $"{fsizeName},";
+                                }
+                                else
+                                {
+                                    Logger.LogInformation($"fsize {fsize.TermName} already set for post {post.ID}.");
+                                }
                             }
-                            else
+                            if (setFSizeNames != "")
                             {
-                                Logger.LogInformation($"fsize {fsize.TermName} already set for post {post.ID}.");
+                                WriteToResultFile($"postId: {post.ID}, {size.TermName} => {setFSizeNames.TrimEnd(',')}");
                             }
-                        }
-                        if (setFSizeNames != "")
-                        {
-                            WriteToResultFile($"postId: {post.ID}, {size.TermName} => {setFSizeNames.TrimEnd(',')}");
-                        }
-                        if (!wasConverted)
-                        {
-                            var categoriesStr = string.Join(",", post.Categories.Select(x => x.TermName));
-                            var sizeChartName = sizeChart?.Name ?? "not found";
-                            WriteToUnknownFile($"PostId:{post.ID}, TermId:{size.term_id}, TermName:{size.TermName}, SizeChart: {sizeChartName}, Categories: {categoriesStr}");
+                            if (!wasConverted)
+                            {
+                                var categoriesStr = string.Join(",", post.Categories.Select(x => x.TermName));
+                                var sizeChartName = sizeChart?.Name ?? "not found";
+                                WriteToUnknownFile($"PostId:{post.ID}, TermId:{size.term_id}, TermName:{size.TermName}, SizeChart: {sizeChartName}, Categories: {categoriesStr}");
+                            }
                         }
                     }
                 }

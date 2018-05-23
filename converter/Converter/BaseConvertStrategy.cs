@@ -103,6 +103,7 @@ namespace Converter
 
             if (Settings.SaveResult)
             {
+                Logger.LogInformation($"Save results...");
                 //сохним новые fcolours
                 Dao.SaveChanges();
 

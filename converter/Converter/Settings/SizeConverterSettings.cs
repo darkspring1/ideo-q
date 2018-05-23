@@ -7,8 +7,9 @@ namespace Converter.Settings
 
     public class SizeConverterSettings : BaseConverterSettings
     {
-        Lazy<string[]> _shoesCategories;
-        
+
+        Lazy<string[]> _ignore;
+
         private ISizeChart[] CreateSizeCharts()
         {
             const string bra_sizes = "bra_sizes";
@@ -43,12 +44,13 @@ namespace Converter.Settings
 
         public SizeConverterSettings(IConfiguration config, string sectionName) : base(config, sectionName)
         {
-            _shoesCategories = LazyStringArray("ShoesCategories");
             SizeCharts = CreateSizeCharts();
             SizeChartBindings = CreateSizeChartBindings();
+            _ignore = LazyStringArray("Ignore");
         }
 
-        public string[] ShoesCategories => _shoesCategories.Value;
+
+        public string[] Ignore => _ignore.Value;
 
         public ISizeChart[] SizeCharts { get; }
 
