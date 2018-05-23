@@ -1,11 +1,10 @@
-﻿namespace Converter
+﻿using Converter.DAL.Constants;
+
+namespace Converter
 {
     public static class StringExtensions
     {
-        const string UK = "uk";
-        const string US = "us";
-        const string EUR = "eur";
-
+       
 
         public static string[] SplitPrefixAndValue(this string key)
         {
@@ -44,23 +43,25 @@
         /// <returns></returns>
         public static string WithoutPrefix(this string key, out string prefix)
         {
-            if (key.IndexOf(UK) == 0)
+            if (key.IndexOf(SizePrefix.UK) == 0)
             {
-                prefix = UK;
-                return key.Substring(2);
+                prefix = SizePrefix.UK;
             }
-            else if (key.IndexOf(US) == 0)
+            else if (key.IndexOf(SizePrefix.US) == 0)
             {
-                prefix = US;
-                return key.Substring(2);
+                prefix = SizePrefix.US;
             }
-            else if (key.IndexOf(EUR) == 0)
+            else if (key.IndexOf(SizePrefix.EUR) == 0)
             {
-                prefix = EUR;
-                return key.Substring(3);
+                prefix = SizePrefix.EUR;
+            }
+            else
+            {
+                throw new System.ArgumentException($"Wrong size: {key}", nameof(key));
             }
 
-            throw new System.ArgumentException($"Wrong size: {key}", nameof(key));
+            return key.Substring(prefix.Length);
+
         }
     }
 }

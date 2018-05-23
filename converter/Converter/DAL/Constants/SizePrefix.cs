@@ -4,6 +4,6 @@
     {
         public const string UK = "uk";
         public const string US = "us";
-        public const string EUR = "eur";
+        public const string EUR = "eu";
     }
 }

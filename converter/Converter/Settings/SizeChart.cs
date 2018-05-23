@@ -6,10 +6,6 @@ namespace Converter.Settings
 {
     public class SizeChart : List<IDictionary<string, string>>, ISizeChart
     {
-        const string UK = "uk";
-        const string US = "us";
-        const string EUR = "eur";
-
         KeyValuePair<string, string> GetKVP(string configSize)
         {
             var key = configSize.Replace(" ", "").ToLower();
