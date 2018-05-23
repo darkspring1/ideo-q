@@ -2,6 +2,6 @@
 {
     interface ISizeConverter
     {
-        string[] Convert(string originalSize, out bool wasConverted);
+        ConvertResult Convert(string[] originalSizes);
     }
 }

@@ -52,5 +52,25 @@ namespace Converter.Size
             wasConverted = false;
             return null;
         }
+
+        public ConvertResult Convert(string[] originalSizes)
+        {
+            HashSet<string> hs = new HashSet<string>();
+            foreach (var originalSize in originalSizes)
+            {
+                var result = GetFSizes(_sizeChart, originalSize);
+                if (result != null)
+                {
+                    foreach (var kvp in result)
+                    {
+                        hs.Add(kvp.Value);
+                    }
+                }
+            }
+
+            var convertedSizes = hs.ToArray();
+            //если сконвертили, то прерываем дальнейшую конвертацию
+            return new ConvertResult(convertedSizes, convertedSizes.Any());
+        }
     }
 }

@@ -4,8 +4,8 @@ using Converter.Settings;
 using System.Linq;
 using Converter.DAL.Entity;
 using Microsoft.Extensions.Caching.Memory;
-using System.Collections.Generic;
 using Converter.DAL.Constants;
+using Converter.Size.Converters;
 
 namespace Converter.Size
 {
@@ -14,7 +14,6 @@ namespace Converter.Size
         const string FSIZE_CACHE_KEY_TEMPLATE = "fsize_{0}";
         private readonly IMemoryCache _cache;
        
-        private readonly AsIsConverter _asIsConverter;
         private readonly DirectMappingConverter _directMappingConverter;
         private readonly SeparateBySlashConverter _separateBySlashConverter;
 
@@ -23,7 +22,6 @@ namespace Converter.Size
             IMemoryCache cache) : base(Taxonomy.PA_FSIZE, dao, logger, settings)
         {
             _cache = cache;
-            _asIsConverter = new AsIsConverter();
             _directMappingConverter = new DirectMappingConverter(Settings.DirectMapping);
             _separateBySlashConverter = new SeparateBySlashConverter();
         }
@@ -35,6 +33,7 @@ namespace Converter.Size
 
         protected override void AfterSave()
         {
+            Logger.LogInformation($"Save results...");
             //проставим количество
             var taxonomyWithCounts = Dao.GetFSizeTaxonomyCount();
             var _fsizes = Dao.GetFSizes();
@@ -101,21 +100,6 @@ namespace Converter.Size
                 return Dao.CreateFSize(fsizeName);
             });
         }
-
-        string[] Convert(string originalSize, IEnumerable<ISizeConverter> converters, out bool wasConverted)
-        {
-            wasConverted = false;
-            string[] result = null;
-            foreach (var converter in converters)
-            {
-                result = converter.Convert(originalSize, out wasConverted);
-                if (wasConverted)
-                {
-                    break;
-                }
-            }
-            return result;
-        }
         
         protected override void ConverPost(Post post)
         {
@@ -124,7 +108,7 @@ namespace Converter.Size
                 if (post.Categories.Any())
                 {
                     var sizeChart = GetSizeChart(post.Categories);
-                    List<ISizeConverter> converters = new List<ISizeConverter>();
+                    ConvertersChain converters = new ConvertersChain();
                     //порядок в котором добавлются конвертеры важен!!
                     converters.Add(_directMappingConverter);
                     
@@ -138,12 +122,19 @@ namespace Converter.Size
                     }
 
                     converters.Add(_separateBySlashConverter);
-                    converters.Add(_asIsConverter);
+                    //converters.Add(_asIsConverter);
 
                     foreach (var size in post.Sizes)
                     {
-                        bool wasConverted = false;
-                        var fsizeNames = Convert(size.TermName, converters, out wasConverted);
+                        var convertResult = converters.Convert(size.TermName);
+                        string[] fsizeNames = converters.Convert(size.TermName);
+                        bool wasConverted = true;
+                        if (!fsizeNames.Any())
+                        {
+                            fsizeNames = new[] { size.TermName };
+                            wasConverted = false;
+                        }
+
                         var setFSizeNames = "";
                         foreach (var fsizeName in fsizeNames)
                         {

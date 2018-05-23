@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Converter.Size
 {
@@ -7,16 +8,19 @@ namespace Converter.Size
     /// </summary>
     class SeparateBySlashConverter : ISizeConverter
     {
-        public string[] Convert(string originalSize, out bool wasConverted)
+        public ConvertResult Convert(string[] originalSizes)
         {
-            var szArray = originalSize.Split("/");
-            if (szArray.Length <= 1)
+            var result = new List<string>();
+            foreach (var originalSize in originalSizes)
             {
-                wasConverted = false;
-                return null;
+                var szArray = originalSize.Split("/");
+                if (szArray.Length > 1)
+                {
+                    result.AddRange(szArray.Select(x => x.Replace(" ", "").ToLower()));
+                }
             }
-            wasConverted = true;
-            return szArray.Select(x => x.Replace(" ", "").ToLower()).ToArray();
+
+            return new ConvertResult(result.ToArray(), result.Any());
         }
     }
 }

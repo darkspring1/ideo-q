@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace Converter.Size
 {
@@ -11,15 +10,20 @@ namespace Converter.Size
         {
             _directMapping = directMapping;
         }
-        public string[] Convert(string originalSize, out bool wasConverted)
+
+       
+        public ConvertResult Convert(string[] originalSizes)
         {
-            if (_directMapping.ContainsKey(originalSize))
+            var result = new List<string>();
+            foreach (var originalSize in originalSizes)
             {
-                wasConverted = true;
-                return _directMapping[originalSize].ToArray();
+                if (_directMapping.ContainsKey(originalSize))
+                {
+                    result.AddRange(_directMapping[originalSize]);
+                }
             }
-            wasConverted = false;
-            return null;
+
+            return new ConvertResult(result.ToArray(), false);
         }
     }
 }
