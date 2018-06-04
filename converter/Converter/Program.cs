@@ -55,13 +55,13 @@ namespace Converter
                     }
                 }
                 logger.LogInformation("FINISHED");
-                Console.WriteLine("Press any key.");
-                Console.ReadKey();
             }
             catch (Exception e)
             {
                 logger.LogError(e.Message, e);
             }
+            Console.WriteLine("Press any key.");
+            Console.ReadKey();
         }
 
     }

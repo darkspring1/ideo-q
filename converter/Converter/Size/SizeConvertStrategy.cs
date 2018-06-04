@@ -131,7 +131,6 @@ namespace Converter.Size
                         }
                         else
                         {
-                            var convertResult = converters.Convert(size.TermName);
                             string[] fsizeNames = converters.Convert(size.TermName);
                             bool wasConverted = true;
                             if (!fsizeNames.Any())
