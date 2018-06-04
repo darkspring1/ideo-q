@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Converter.Size.Converters
 {
@@ -20,6 +21,12 @@ namespace Converter.Size.Converters
                 {
                     break;
                 }
+            }
+
+            var usSize = convertedSizes.FirstOrDefault(x => x.IsUs());
+            if (usSize != null)
+            {
+                return new[] { usSize };
             }
             return convertedSizes;
         }

@@ -1,10 +1,27 @@
 ﻿using Converter.DAL.Constants;
+using System;
 
 namespace Converter
 {
     public static class StringExtensions
     {
-       
+        /// <summary>
+        /// Определяет, есть ли префикс US в размере
+        /// </summary>
+        /// <param name="src"></param>
+        /// <returns></returns>
+        public static bool IsUs(this string src)
+        {
+            try
+            {
+                return src.Length >= 2 && src[0] == 'u' && src[1] == 's';
+            }
+            catch (Exception e)
+            {
+
+            }
+            return false;
+        }
 
         public static string[] SplitPrefixAndValue(this string key)
         {
