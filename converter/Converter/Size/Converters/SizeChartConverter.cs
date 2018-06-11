@@ -22,13 +22,13 @@ namespace Converter.Size
 
         IDictionary<string, string> GetFSizes(ISizeChart sizeChart, string originalSize)
         {
-            var key = $"{originalSize}_{sizeChart.Name}";
-
+            var originalSizeFormated = originalSize.Replace(" ", "");
+            var key = $"{originalSizeFormated}_{sizeChart.Name}";
             var result = _cache.GetOrCreate(key, cacheEntry =>
             {
                 foreach (var szDictionary in sizeChart)
                 {
-                    if (szDictionary.ContainsKey(originalSize))
+                    if (szDictionary.ContainsKey(originalSizeFormated))
                     {
                         return szDictionary;
                     }
