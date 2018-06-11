@@ -45,7 +45,7 @@ namespace Converter.DAL.Entity
                 description = $"size for filter '{fsizeName}'",
                 Term = new Term
                 {
-                    slug = fsizeName,
+                    slug = fsizeName.Replace(" ", ""),
                     name = fsizeName
                 }
             };
