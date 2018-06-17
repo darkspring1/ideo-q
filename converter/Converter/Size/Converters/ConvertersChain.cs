@@ -26,7 +26,7 @@ namespace Converter.Size.Converters
             var usSize = convertedSizes.FirstOrDefault(x => x.IsUs());
             if (usSize != null)
             {
-                return new[] { usSize };
+                return new[] { usSize.WithoutPrefix() };
             }
             return convertedSizes;
         }

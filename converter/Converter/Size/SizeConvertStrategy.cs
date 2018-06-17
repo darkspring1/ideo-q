@@ -104,6 +104,10 @@ namespace Converter.Size
         {
             if (post.Sizes.Any())
             {
+                if (post.ID == 7021)
+                {
+
+                }
                 if (post.Categories.Any())
                 {
                     var sizeChart = GetSizeChart(post.Categories);
@@ -135,7 +139,7 @@ namespace Converter.Size
                             bool wasConverted = true;
                             if (!fsizeNames.Any())
                             {
-                                fsizeNames = new[] { size.TermName };
+                                fsizeNames = new[] { size.TermName.TryWithoutPrefix() };
                                 wasConverted = false;
                             }
 

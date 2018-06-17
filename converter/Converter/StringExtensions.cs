@@ -44,6 +44,7 @@ namespace Converter
 
         /// <summary>
         /// только знаение размера, без префикса us, uk, eur
+        /// Выбрасывает исключение, если передать значение без префикса
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -55,6 +56,47 @@ namespace Converter
 
         /// <summary>
         /// только знаение размера, без префикса us, uk, eur
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static string TryWithoutPrefix(this string key)
+        {
+            var str = "";
+            return TryWithoutPrefix(key, out str);
+        }
+
+        /// <summary>
+        /// Только знаение размера, без префикса us, uk, eur
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static string TryWithoutPrefix(this string key, out string prefix)
+        {
+            if (key.IndexOf(SizePrefix.UK) == 0)
+            {
+                prefix = SizePrefix.UK;
+            }
+            else if (key.IndexOf(SizePrefix.US) == 0)
+            {
+                prefix = SizePrefix.US;
+            }
+            else if (key.IndexOf(SizePrefix.EUR) == 0)
+            {
+                prefix = SizePrefix.EUR;
+            }
+            else
+            {
+                prefix = null;
+                return key;
+            }
+
+            return key.Substring(prefix.Length);
+        }
+
+
+        /// <summary>
+        /// Только знаение размера, без префикса us, uk, eur
+        /// Выбрасывает исключение, если передать значение без префикса
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -78,7 +120,6 @@ namespace Converter
             }
 
             return key.Substring(prefix.Length);
-
         }
     }
 }
