@@ -23,6 +23,24 @@ namespace Converter
             return false;
         }
 
+        public static bool HasPrefix(this string src)
+        {
+
+            if (src.Length > 2)
+            {
+                if (src[0] == 'u')
+                {
+                    return src[1] == 's' || src[1] == 'k';
+                }
+                else if (src[0] == 'e' && src[1] == 'u')
+                {
+                    return true;
+                }
+
+            }
+            return false;
+        }
+
         public static string[] SplitPrefixAndValue(this string key)
         {
             string prefix = null;
@@ -120,6 +138,22 @@ namespace Converter
             }
 
             return key.Substring(prefix.Length);
+        }
+
+
+        public static string AddUsPrefix(this string key)
+        {
+            return $"{SizePrefix.US}{key}";
+        }
+
+        public static string AddUkPrefix(this string key)
+        {
+            return $"{SizePrefix.UK}{key}";
+        }
+
+        public static string AddEurPrefix(this string key)
+        {
+            return $"{SizePrefix.EUR}{key}";
         }
     }
 }

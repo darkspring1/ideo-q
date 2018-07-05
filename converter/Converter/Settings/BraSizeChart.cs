@@ -7,7 +7,7 @@ using System.Linq;
 namespace Converter.Settings
 {
 
-    public class BraSizeChart : List<IDictionary<string, string>>, ISizeChart
+    public class BraSizeChart : BaseSizeChart
     {
        
 
@@ -32,6 +32,7 @@ namespace Converter.Settings
 
         public BraSizeChart(IConfigurationSection braSizesSection, IConfigurationSection cupSizesSection)
         {
+            Name = "BraSizeChart";
             var braSzsSections = braSizesSection.GetChildren();
             var cupSzsSections = cupSizesSection.GetChildren();
 
@@ -47,7 +48,5 @@ namespace Converter.Settings
                 AddItems(braSizeDictionaries, cupSzDictionary);
             }
         }
-
-        public string Name { get; }
     }
 }

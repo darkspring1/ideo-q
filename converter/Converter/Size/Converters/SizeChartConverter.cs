@@ -6,25 +6,87 @@ using System.Linq;
 namespace Converter.Size
 {
     /// <summary>
+    /// Добавляет префикс к размеру и пытается его найти в таблице
+    /// </summary>
+    internal class SizeChartConverter2 : SizeChartConverter
+    {
+        public SizeChartConverter2(ISizeChart sizeChart, IMemoryCache cache) : base(sizeChart, cache)
+        {
+        }
+
+        protected override IDictionary<string, string> GetFSizes(ISizeChart sizeChart, string originalSize)
+        {
+            var originalSizeFormated = originalSize.Replace(" ", "");
+
+            if (originalSizeFormated.HasPrefix())
+            {
+                return null;
+            }
+
+            var originalSizeFormatedUs = originalSizeFormated.AddUsPrefix();
+            var originalSizeFormatedUk = originalSizeFormated.AddUkPrefix();
+            var originalSizeFormatedEur = originalSizeFormated.AddEurPrefix();
+
+            var cacheKey = $"{nameof(SizeChartConverter2)}_{originalSizeFormated}_{sizeChart.Name}";
+
+            var formatedSizes = new List<string>();
+
+            var result = Cache.GetOrCreate(cacheKey, cacheEntry =>
+            {
+                int i = 0;
+                IDictionary<string, string> dict;
+                if (sizeChart.ContainsSize(originalSizeFormatedEur, out dict))
+                {
+                    i++;
+                }
+                if (sizeChart.ContainsSize(originalSizeFormatedUk, out dict))
+                {
+                    i++;
+                }
+                if (i == 2)
+                {
+                    //нет смысла дальше искать в таблице есть размер, как с префиксом eur так и с uk, непонятно какой брать
+                    return null;
+                }
+
+                if (sizeChart.ContainsSize(originalSizeFormatedUs, out dict))
+                {
+                    i++;
+                }
+
+                if (i == 2)
+                {
+                    //в таблице есть размер, c разными префиксами , непонятно какой брать
+                    return null;
+                }
+
+                return dict;
+            });
+
+            return result;
+        }
+
+    }
+
+    /// <summary>
     /// Конвертит по таблице
     /// </summary>
     class SizeChartConverter : ISizeConverter
     {
         private readonly ISizeChart _sizeChart;
-        private readonly IDictionary<string, List<string>> _directMapping;
-        private readonly IMemoryCache _cache;
+        protected readonly IMemoryCache Cache;
 
         public SizeChartConverter(ISizeChart sizeChart, IMemoryCache cache)
         {
             _sizeChart = sizeChart;
-            _cache = cache;
+            Cache = cache;
         }
 
-        IDictionary<string, string> GetFSizes(ISizeChart sizeChart, string originalSize)
+        protected virtual IDictionary<string, string> GetFSizes(ISizeChart sizeChart, string originalSize)
         {
             var originalSizeFormated = originalSize.Replace(" ", "");
-            var key = $"{originalSizeFormated}_{sizeChart.Name}";
-            var result = _cache.GetOrCreate(key, cacheEntry =>
+            var cacheKey = $"{nameof(SizeChartConverter)}_{originalSizeFormated}_{sizeChart.Name}";
+            var result = Cache.GetOrCreate(cacheKey, cacheEntry =>
             {
                 foreach (var szDictionary in sizeChart)
                 {
@@ -37,20 +99,6 @@ namespace Converter.Size
             });
 
             return result;
-        }
-
-        public string[] Convert(string originalSize, out bool wasConverted)
-        {
-
-            var result = GetFSizes(_sizeChart, originalSize);
-            if (result != null)
-            {
-                wasConverted = true;
-                return result.Select(x => x.Value).ToArray();
-            }
-
-            wasConverted = false;
-            return null;
         }
 
         public ConvertResult Convert(string[] originalSizes)

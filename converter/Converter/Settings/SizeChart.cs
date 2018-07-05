@@ -4,22 +4,12 @@ using System.Linq;
 
 namespace Converter.Settings
 {
-    public class SizeChart : List<IDictionary<string, string>>, ISizeChart
+    public class SizeChart : BaseSizeChart
     {
         KeyValuePair<string, string> GetKVP(string configSize)
         {
             var key = configSize.Replace(" ", "").ToLower();
             var value = key;
-            /*
-            if (key.IndexOf(UK) == 0 || key.IndexOf(US) == 0)
-            {
-                value = $"{configSize.Substring(0, 2)} {configSize.Substring(2)}";
-            }
-            else if (key.IndexOf(EUR) == 0)
-            {
-                value = $"{EUR} {configSize.Substring(3)}";
-            }
-            */
             return new KeyValuePair<string, string>(key, value);
         }
 
@@ -34,7 +24,5 @@ namespace Converter.Settings
                 Add(szDictionary);
             }
         }
-
-        public string Name { get; }
     }
 }
