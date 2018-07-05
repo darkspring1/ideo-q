@@ -23,12 +23,8 @@ namespace Converter.Size.Converters
                 }
             }
 
-            var usSize = convertedSizes.FirstOrDefault(x => x.IsUs());
-            if (usSize != null)
-            {
-                return new[] { usSize };
-            }
-            return convertedSizes;
+            //только us sizes
+            return convertedSizes.Where(x => x.IsUs()).ToArray();
         }
     }
 }

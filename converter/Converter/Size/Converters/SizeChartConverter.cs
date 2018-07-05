@@ -34,12 +34,12 @@ namespace Converter.Size
             var result = Cache.GetOrCreate(cacheKey, cacheEntry =>
             {
                 int i = 0;
-                IDictionary<string, string> dict;
-                if (sizeChart.ContainsSize(originalSizeFormatedEur, out dict))
+                IDictionary<string, string> dict = null;
+                if (sizeChart.ContainsSize(originalSizeFormatedEur, ref dict))
                 {
                     i++;
                 }
-                if (sizeChart.ContainsSize(originalSizeFormatedUk, out dict))
+                if (sizeChart.ContainsSize(originalSizeFormatedUk, ref dict))
                 {
                     i++;
                 }
@@ -49,7 +49,7 @@ namespace Converter.Size
                     return null;
                 }
 
-                if (sizeChart.ContainsSize(originalSizeFormatedUs, out dict))
+                if (sizeChart.ContainsSize(originalSizeFormatedUs, ref dict))
                 {
                     i++;
                 }
@@ -88,12 +88,10 @@ namespace Converter.Size
             var cacheKey = $"{nameof(SizeChartConverter)}_{originalSizeFormated}_{sizeChart.Name}";
             var result = Cache.GetOrCreate(cacheKey, cacheEntry =>
             {
-                foreach (var szDictionary in sizeChart)
+                IDictionary<string, string> szDictionary = null;
+                if (sizeChart.ContainsSize(originalSizeFormated, ref szDictionary))
                 {
-                    if (szDictionary.ContainsKey(originalSizeFormated))
-                    {
-                        return szDictionary;
-                    }
+                    return szDictionary;
                 }
                 return null;
             });

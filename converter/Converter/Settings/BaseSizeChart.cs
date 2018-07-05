@@ -6,9 +6,8 @@ namespace Converter.Settings
     {
         public string Name { get; protected set; }
 
-        public bool ContainsSize(string size, out IDictionary<string, string> szDictionary)
+        public bool ContainsSize(string size, ref IDictionary<string, string> szDictionary)
         {
-            szDictionary = null;
             foreach (var dictionary in this)
             {
                 if (dictionary.ContainsKey(size))
@@ -17,15 +16,14 @@ namespace Converter.Settings
                     return true;
                 }
             }
-
             return false;
         }
 
         public bool ContainsSize(string size)
         {
-            IDictionary<string, string> szDictionary;
+            IDictionary<string, string> szDictionary = null;
 
-            return ContainsSize(size, out szDictionary);
+            return ContainsSize(size, ref szDictionary);
         }
     }
 }

@@ -6,7 +6,7 @@ namespace Converter.Settings
     {
         string Name { get; }
 
-        bool ContainsSize(string size, out IDictionary<string, string> szDictionary);
+        bool ContainsSize(string size, ref IDictionary<string, string> szDictionary);
 
         bool ContainsSize(string size);
     }

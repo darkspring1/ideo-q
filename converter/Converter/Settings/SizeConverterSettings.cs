@@ -22,7 +22,7 @@ namespace Converter.Settings
 
             var result = section
                 .GetChildren()
-                .Where(x => x.Key != bra_sizes || x.Key != cup_sizes)
+                .Where(x => x.Key != bra_sizes && x.Key != cup_sizes)
                 .Select(x => new SizeChart(x))
                 .ToList<ISizeChart>();
 
